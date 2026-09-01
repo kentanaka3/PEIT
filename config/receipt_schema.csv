@@ -1,0 +1,2 @@
+month,receipt_id,receipt_date,merchant,item_raw,item_normalized,category,quantity,unit,shelf_unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,source_file,notes
+2026-01,receipt-001,2026-01-15,Example Market,Milk 1 L,milk 1 l,Food and beverages,1,L,2.50,MXN,0,0,0,0,-2.50,recurring,example_month.csv,Illustrative data only

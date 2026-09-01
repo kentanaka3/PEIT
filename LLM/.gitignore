@@ -1,0 +1,35 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*token*
+*secret*
+
+# Local/provider logs and caches
+logs/
+cache/
+*.jsonl
+*.sqlite
+
+# Large or generated artifacts; keep them outside Git and record an identifier
+checkpoints/
+models/
+weights/
+artifacts/
+outputs/raw/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.h5
+*.zip
+*.tar
+*.tar.gz
+
+# Temporary files
+.DS_Store
+__pycache__/
+*.swp

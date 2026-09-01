@@ -1,0 +1,320 @@
+% PEIT Innovation Showcase extended abstract
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[margin=1.7cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
+\setlist{nosep,leftmargin=*}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+
+% The article class keeps the 2--4 page format; \chapter is mapped to a
+% compact heading so chapters do not force page breaks.
+\newcommand{\chapter}[1]{\section{#1}}
+
+\title{PEIT: Personal Economic Inflation Tracker\\
+\large Decentralizing Economic Truth Through Crowdsourced Purchase Analytics}
+\author{Ken Tanaka Hernández$^{1}$ \and Co-author Name$^{2}$\\
+\small $^{1}$HAIKU, Guadalajara, Mexico \quad $^{2}$HAIKU, Guadalajara, Mexico\\
+\small \href{mailto:kentanaka3@outlook.com}{kentanaka3@outlook.com}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Personal inflation is often discussed using population-level indices that may
+not represent an individual's consumption pattern. PEIT (Personal Economic
+Inflation Tracker) is a community-driven financial ecosystem designed to shift
+the power of macroeconomic tracking from centralized governments directly to
+individual consumers.
+
+Traditional economic metrics, such as the official Consumer Price Index (CPI),
+rely on a generalized, rigid "basket of goods and services." This macro
+approach inherently smooths out volatile price surges and fails to accurately
+reflect diverse lifestyles, cultural nuances, or specific dietary choices. By
+treating every consumer as an independent data node, this platform captures the
+real-world, localized price movements of goods and services at the point of
+sale.
+
+Through standard mobile camera snapshots, the system instantly transforms
+static paper and digital receipts into dynamic, structured economic data. This
+data is split to achieve two simultaneous goals: maintaining a private ledger
+for personal lifestyle analysis and contributing to an open-access,
+crowdsourced price map.
+
+In its current form, PEIT is a research-oriented prototype that records monthly
+expenditure lines from manually transcribed receipts, separating price change
+from changing purchasing behaviour. The prototype preserves the original
+receipt wording, quantity, unit, signed financial amount, price components,
+event type, and source-file provenance. It validates monthly CSV inputs,
+appends an auditable JSON-lines import record, and produces two distinct
+indicators: an exact-normalized-item fixed-basket price index and a
+changing-basket paid-expenditure index. It also reports item-match coverage and
+month-over-month change, making incompleteness visible rather than silently
+inventing observations. The current demonstrator is intentionally modest: its
+price aggregation is an unweighted arithmetic mean of matched price relatives,
+and category fallback, substitution review, uncertainty intervals,
+multi-currency conversion, and forecasting remain planned extensions. This
+separation creates a transparent foundation for testing alternative basket
+definitions and weight systems, including personal preferred weights and
+historically recognized weights. During a live demonstration, a synthetic MXN
+receipt file can be validated, audited, and compared across two months in a
+reproducible command-line workflow. The intended outcome is not an official
+inflation statistic, but an inspectable personal measurement system that can
+support budgeting, research into consumption behaviour, and future user
+interaction evaluation.
+\end{abstract}
+
+\textbf{Keywords:} personal inflation; expenditure tracking; price index;
+reproducible analysis; receipt data; local-first software; consumption behaviour
+
+\chapter{Background and motivation}
+
+Inflation is experienced through the prices and quantities that an individual
+actually encounters. A population-wide consumer price index is valuable for
+macroeconomic comparison, but it does not answer a personal question such as:
+\emph{How has the cost of the goods and services I usually consume changed?}
+Moreover, a larger monthly bill can result from higher prices, buying more,
+substitution, or a one-off purchase. Treating all of these effects as one
+number obscures the underlying mechanism.
+
+PEIT addresses this need with two measurement pairs. The \emph{offer} side
+describes observed price terms, while the \emph{demand} side describes
+observed purchase behaviour. The first milestone targets monthly manual
+receipt ingestion for one personal user, with local-only storage and explicit
+human review. The project therefore prioritizes traceability and honest
+uncertainty over automation.
+
+\begin{table}[h]
+\centering
+\caption{The two measurements kept separate by PEIT.}
+\small
+\begin{tabular}{p{0.22\linewidth}p{0.32\linewidth}p{0.35\linewidth}}
+\toprule
+Measurement & Main question & Typical drivers of change\\
+\midrule
+Price / offer & What does a comparable item cost? & shelf price, tax, fee, discount\\
+Expenditure / demand & What did the user spend? & price, quantity, mix, one-off events\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Scientific and technological foundations}
+
+The prototype treats a receipt line as an observation and keeps derived
+quantities separate from it. Its signed ledger convention is that expenditure
+is negative, income is positive, discounts are positive offsets, and fees,
+taxes, markups, surcharges, and deposits are negative adjustments. The schema
+also requires quantity and unit, enabling future comparison per kilogram,
+litre, piece, hour, token, or kWh. MXN is the default example currency, while
+the currency code is stored per row.
+
+For a normalized item $i$, let $p_{i,t}$ be its quantity-weighted average unit
+price in month $t$:
+\[
+ p_{i,t}=\frac{\sum_{k\in\mathrm{purchases}(i,t)}q_{i,t,k}\,p_{i,t,k}}
+              {\sum_{k\in\mathrm{purchases}(i,t)}q_{i,t,k}}.
+\]
+The price relative between a base month $0$ and current month $t$ is
+\[
+ r_{i,t}=\frac{p_{i,t}}{p_{i,0}},
+ \qquad
+ I^{\mathrm{price}}_t=100\,\frac{1}{|M_t|}\sum_{i\in M_t}r_{i,t},
+\]
+where $M_t$ is the set of exact normalized-item matches. The prototype uses
+shelf unit prices for this demonstrator and reports the coverage
+\[
+ C_t=100\,\frac{|M_t|}{|B_0|}.
+\]
+The changing-basket expenditure index is
+\[
+ I^{\mathrm{exp}}_t=100\,\frac{\sum_{j\in t}|a_j|}
+ {\sum_{j\in 0}|a_j|},
+\]
+where $a_j$ is the signed paid total and absolute values express positive
+consumption cost in the display index. The first available month is set to
+100.0. This is a prototype index, not yet a named weighted Laspeyres,
+Paasche, Fisher, or chained index.
+
+\paragraph{Worked example.} If one litre of milk costs MXN~2.50 in the base
+month and MXN~3.00 later, the price index is $100(3.00/2.50)=120.0$. If two
+litres are purchased later for MXN~6.00, the expenditure index is
+$100(6.00/2.50)=240.0$; quantity change explains the difference.
+
+\chapter{System architecture and design methodology}
+
+The current architecture is a small Python package with a CSV schema, tests,
+and a command-line interface. The data flow is:
+
+\begin{verbatim}
+manual receipt transcription
+          |
+          v
+    monthly CSV --> schema validation --> append-only JSONL audit record
+          |                                   |
+          +--> exact item matching -----------+
+                        |                     |
+                        v                     v
+                  price index         expenditure index
+                        \                     /
+                        coverage and MoM report
+\end{verbatim}
+
+The design follows four principles: (1) preserve source observations;
+(2) label analyst-controlled normalization; (3) keep price and expenditure
+measurements separate; and (4) make missing history and incomplete matching
+visible. Transfers, refunds, and income remain typed ledger rows but are
+excluded from the current purchase indices.
+
+\begin{table}[h]
+\centering
+\caption{Prototype components and evidence produced.}
+\small
+\begin{tabular}{p{0.25\linewidth}p{0.38\linewidth}p{0.25\linewidth}}
+\toprule
+Component & Responsibility & Evidence\\
+\midrule
+CSV reader & preserve and validate receipt rows & row-level issues\\
+Audit append & record import date and source file & JSONL ledger\\
+Index calculator & compare exact keys and paid totals & JSON or text report\\
+Focused tests & check validation and index separation & assertions\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Prototype functionality and demonstration scenario}
+
+The demonstrator uses synthetic data only. A monthly CSV contains fields such
+as \texttt{item\_raw}, \texttt{item\_normalized}, \texttt{category},
+\texttt{quantity}, \texttt{unit}, \texttt{shelf\_unit\_price},
+\texttt{discount}, \texttt{fee}, \texttt{tax}, \texttt{deposit},
+\texttt{paid\_total}, \texttt{event\_type}, and \texttt{source\_file}.
+For example, a one-litre milk line can be recorded with a shelf price of
+MXN~2.50 and a paid total of \$-2.50. A later line at MXN~3.00 yields a
+fixed-basket price index of 120.0 for that item. If the later purchase also
+contains twice the quantity, the expenditure index can rise to 240.0; the two
+results communicate different facts.
+
+\paragraph{Input example.} A synthetic row may contain
+\texttt{milk 1 l}, quantity~1, unit~\texttt{L}, shelf unit price~2.50,
+currency~\texttt{MXN}, discount~0, and paid total~\$-2.50. The raw wording is
+retained while the normalized key enables matching.
+
+A live sequence is:
+
+\begin{enumerate}
+  \item inspect the synthetic CSV and its schema;
+  \item run the CLI validator and display row-level errors, if any;
+  \item append the import and source identity to an audit JSONL file;
+  \item calculate the two monthly indices, coverage, and price-index MoM;
+  \item change one value or item key and show how the result changes.
+\end{enumerate}
+
+Representative Unix commands are:
+
+\begin{verbatim}
+PYTHONPATH=src python -m peit.cli config/receipt_schema.csv --json
+PYTHONPATH=src python -m peit.cli config/receipt_schema.csv --audit /tmp/peit-audit.jsonl
+\end{verbatim}
+
+The exhibition package should include a short screen recording, a synthetic
+two-month CSV, the exact command transcript, and a README explaining that
+positive display costs are derived from signed ledger values.
+
+\begin{description}
+  \item[Visitor task 1:] identify raw and normalized item fields.
+  \item[Visitor task 2:] correct a malformed quantity or date.
+  \item[Visitor task 3:] compare price change with expenditure change.
+  \item[Visitor task 4:] explain why incomplete matching lowers coverage.
+\end{description}
+
+\chapter{Novelty, contribution, and intended applications}
+
+PEIT's contribution is methodological as well as technical: it makes the
+personal inflation question explicit as a separation between price conditions,
+purchase behaviour, and total expenditure. The audit trail and status labels
+also prevent a normalized label or a forecast from being mistaken for a raw
+observation. Potential applications include personal budgeting, reflective
+consumption analysis, educational demonstrations of index construction, and
+research on individualized expenditure patterns. The local-first design is
+particularly suitable for sensitive financial information.
+
+\begin{itemize}
+  \item \textbf{Personal use:} understand recurring costs and unusual bills.
+  \item \textbf{Education:} demonstrate how basket definitions affect indices.
+  \item \textbf{Research:} study individualized price and consumption patterns.
+  \item \textbf{Technology transfer:} provide a privacy-preserving foundation.
+\end{itemize}
+
+\chapter{Current development status}
+
+The project is a working command-line proof of concept. CSV validation,
+signed receipt fields, JSON-lines provenance, exact normalized-item matching,
+fixed-basket price calculation, changing-basket expenditure calculation,
+coverage, and tests are implemented. The web interface is intentionally
+deferred. The following capabilities are specified but not yet implemented:
+category-level fallback, human-reviewed equivalence, unit-conversion tables,
+category contributions, uncertainty quantification, time-based currency
+conversion, and multi-horizon forecasts. Results from the current prototype
+must therefore be presented as derived personal indicators with limited
+coverage, not as official inflation or validated forecasts.
+
+\begin{table}[h]
+\centering
+\caption{Implemented and planned capabilities at the exhibition stage.}
+\small
+\begin{tabular}{p{0.38\linewidth}p{0.18\linewidth}p{0.32\linewidth}}
+\toprule
+Capability & Status & Presentation wording\\
+\midrule
+CSV validation and provenance & Implemented & working prototype\\
+Exact-key price and expenditure indices & Implemented & demonstrable\\
+Category fallback and substitutions & Planned & future work\\
+Weights and uncertainty intervals & Planned & research extension\\
+Currency conversion and forecasts & Planned & scalability roadmap\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Future work, scalability, and user evaluation}
+
+The next research decisions concern the basket formula, treatment of durable
+goods such as cars, missing prices, substitutions, category taxonomy, and the
+definition of uncertainty. A versioned category configuration and immutable
+monthly input snapshots will support reproducibility. Later stages can add a
+database while retaining canonical CSV export, then introduce a web UI and
+multi-horizon forecasts with backtesting against seasonal-naive baselines.
+Scaling is expected to concern many months and many lines for one user rather
+than many users; privacy therefore remains local by default.
+
+The prototype is suitable for the conference's structured interaction study.
+Participants can complete a short task sequence: understand the problem,
+inspect a receipt row, correct a validation error, run a two-month comparison,
+and interpret the difference between price and expenditure indices. Evaluation
+can collect usability, UX, functionality, accessibility, innovation,
+perceived usefulness, technical robustness, and educational or scientific
+impact. Results should be aggregated and reported as user feedback, with
+participant privacy preserved and without presenting subjective ratings as
+scientific validation of the inflation formula.
+
+\chapter{Conclusion}
+
+PEIT demonstrates a transparent route from manually entered receipts to two
+distinct personal economic indicators. Its principal value at this stage is a
+reviewable foundation: observations remain traceable, analytical choices are
+visible, and the difference between price change and spending behaviour is
+preserved. The planned extensions will test whether richer matching, weights,
+uncertainty, and forecasts improve usefulness without weakening that evidence
+boundary.
+
+\end{document}

@@ -1,0 +1,49 @@
+name: Lint and Verify ADRs
+
+on:
+  pull_request:
+    paths:
+      - 'doc/adr/**'
+      - 'config/adr_schema.md'
+      - 'LLM/scripts/handler.sh'
+      - '.github/workflows/adr-verification.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'doc/adr/**'
+      - 'config/adr_schema.md'
+      - 'LLM/scripts/handler.sh'
+      - '.github/workflows/adr-verification.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-adrs:
+    name: Lint Schema and Check Index Sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint ADR metadata
+        run: |
+          set -euo pipefail
+          bash LLM/scripts/handler.sh validate --root "$PWD"
+
+      - name: Regenerate ADR index table
+        run: |
+          set -euo pipefail
+          bash LLM/scripts/handler.sh adr update
+
+      - name: Check for uncommitted ADR index changes
+        run: |
+          set -euo pipefail
+          if ! git diff --exit-code -- doc/adr/README.md; then
+            echo "::error file=doc/adr/README.md::ADR index is out of sync."
+            echo "Run 'bash LLM/scripts/handler.sh adr update' and commit doc/adr/README.md."
+            exit 1
+          fi
+          echo "ADR index is up to date."
