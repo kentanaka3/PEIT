@@ -1,0 +1,828 @@
+{
+  "name": "default",
+  "currency": "MXN",
+  "start_year": 2021,
+  "months_count": 60,
+  "financial_behavior": {
+    "savings_rate": 0.15,
+    "discount_seeking_probability": 0.25,
+    "refund_probability": 0.02,
+    "savings_merchant": "CETES Directo",
+    "savings_description": "Ahorro Recurrente CETES"
+  },
+  "income": [
+    {
+      "item": "salary payroll biweekly",
+      "merchant": "Corporación Financiera Nacional",
+      "description": "Nómina Quincenal",
+      "category": "Income",
+      "amount": 18000.0,
+      "frequency": "biweekly",
+      "schedule": [
+        15,
+        30
+      ],
+      "event_type": "income",
+      "volatility": 0.005,
+      "tier": "A",
+      "rating": 5.0
+    }
+  ],
+  "basket": [
+    {
+      "item": "milk 1 l",
+      "product": "Leche Entera",
+      "category": "Food and beverages",
+      "unit": "L",
+      "scheduling": {
+        "mode": "count",
+        "count": 4
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Pasteurizada",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Tienda Express",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.2
+        },
+        {
+          "merchant": "Mercado Local",
+          "weight": 0.1,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Lala",
+          "weight": 0.5,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "brand": "Alpura",
+          "weight": 0.3,
+          "tier": "A",
+          "rating": 4.7
+        },
+        {
+          "brand": "Santa Clara",
+          "weight": 0.2,
+          "tier": "A",
+          "rating": 4.9
+        }
+      ]
+    },
+    {
+      "item": "white bread 500 g",
+      "product": "Pan Blanco de Caja",
+      "category": "Food and beverages",
+      "unit": "piece",
+      "scheduling": {
+        "mode": "count",
+        "count": 2
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Clásico",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.7,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Tienda Express",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.2
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Bimbo",
+          "weight": 0.7,
+          "tier": "B",
+          "rating": 4.5
+        },
+        {
+          "brand": "Wonder",
+          "weight": 0.3,
+          "tier": "C",
+          "rating": 4.1
+        }
+      ]
+    },
+    {
+      "item": "eggs 12 pack",
+      "product": "Huevos Blancos",
+      "category": "Food and beverages",
+      "unit": "piece",
+      "scheduling": {
+        "mode": "count",
+        "count": 2
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Fresco",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Mercado Local",
+          "weight": 0.4,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "San Juan",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "brand": "Bachoco",
+          "weight": 0.4,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ]
+    },
+    {
+      "item": "ground coffee 250 g",
+      "product": "Café Tostado y Molido",
+      "category": "Food and beverages",
+      "unit": "piece",
+      "scheduling": {
+        "mode": "count",
+        "count": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Gourmet",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.8,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Tienda Express",
+          "weight": 0.2,
+          "tier": "B",
+          "rating": 4.2
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Nescafé",
+          "weight": 0.6,
+          "tier": "B",
+          "rating": 4.3
+        },
+        {
+          "brand": "Punta del Cielo",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ]
+    },
+    {
+      "item": "rice long grain 1 kg",
+      "product": "Arroz Grano Largo",
+      "category": "Food and beverages",
+      "unit": "kg",
+      "scheduling": {
+        "mode": "count",
+        "count": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.7,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Mercado Local",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Verde Valle",
+          "weight": 0.7,
+          "tier": "A",
+          "rating": 4.7
+        },
+        {
+          "brand": "SOS",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.4
+        }
+      ]
+    },
+    {
+      "item": "black beans 1 kg",
+      "product": "Frijol Negro",
+      "category": "Food and beverages",
+      "unit": "kg",
+      "scheduling": {
+        "mode": "count",
+        "count": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Mercado Local",
+          "weight": 0.4,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "La Costeña",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.6
+        },
+        {
+          "brand": "Verde Valle",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ]
+    },
+    {
+      "item": "chicken breast 1 kg",
+      "product": "Pechuga de Pollo",
+      "category": "Food and beverages",
+      "unit": "kg",
+      "scheduling": {
+        "mode": "count",
+        "count": 2
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Sin Piel",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.5,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Carnicería Don Pepe",
+          "weight": 0.5,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Bachoco",
+          "weight": 0.6,
+          "tier": "B",
+          "rating": 4.5
+        },
+        {
+          "brand": "Pilgrims",
+          "weight": 0.4,
+          "tier": "B",
+          "rating": 4.4
+        }
+      ]
+    },
+    {
+      "item": "apples gala 1 kg",
+      "product": "Manzana Gala",
+      "category": "Food and beverages",
+      "unit": "kg",
+      "scheduling": {
+        "mode": "count",
+        "count": 2
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Mercado Local",
+          "weight": 0.7,
+          "tier": "B",
+          "rating": 4.5
+        },
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.3,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Washington",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "brand": "Genérica",
+          "weight": 0.4,
+          "tier": "C",
+          "rating": 4.0
+        }
+      ]
+    },
+    {
+      "item": "sparkling water 600 ml",
+      "product": "Agua Mineral",
+      "category": "Food and beverages",
+      "unit": "piece",
+      "scheduling": {
+        "mode": "count",
+        "count": 4
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Vidrio",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Tienda Express",
+          "weight": 0.5,
+          "tier": "B",
+          "rating": 4.2
+        },
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.5,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Peñafiel",
+          "weight": 0.6,
+          "tier": "B",
+          "rating": 4.4
+        },
+        {
+          "brand": "Topo Chico",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ]
+    },
+    {
+      "item": "rent monthly",
+      "product": "Renta Depto",
+      "category": "Housing and utilities",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Inmobiliaria Metropolitana",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Renta",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 5.0
+        }
+      ]
+    },
+    {
+      "item": "electricity cfe bimonthly",
+      "product": "Electricidad CFE",
+      "category": "Housing and utilities",
+      "unit": "service",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 2,
+        "offset_months": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Doméstico",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Comisión Federal de Electricidad",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.5
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "CFE",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.5
+        }
+      ]
+    },
+    {
+      "item": "natural gas",
+      "product": "Gas Natural",
+      "category": "Housing and utilities",
+      "unit": "m3",
+      "scheduling": {
+        "mode": "count",
+        "count": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Naturgy México",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.6
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Naturgy",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.6
+        }
+      ]
+    },
+    {
+      "item": "metro transit pass",
+      "product": "Tarjeta Metro",
+      "category": "Transport",
+      "unit": "month",
+      "scheduling": {
+        "mode": "count",
+        "count": 1
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Recarga",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "STC Metro",
+          "weight": 1.0,
+          "tier": "C",
+          "rating": 4.1
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Metro",
+          "weight": 1.0,
+          "tier": "C",
+          "rating": 4.1
+        }
+      ]
+    },
+    {
+      "item": "gasoline magna 1 l",
+      "product": "Gasolina Magna",
+      "category": "Transport",
+      "unit": "L",
+      "scheduling": {
+        "mode": "count",
+        "count": 3
+      },
+      "quantity": 30,
+      "pack_size": 1,
+      "variant": "Regular",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Estación Pemex",
+          "weight": 0.7,
+          "tier": "B",
+          "rating": 4.3
+        },
+        {
+          "merchant": "OXXO Gas",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.4
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Pemex",
+          "weight": 0.7,
+          "tier": "B",
+          "rating": 4.3
+        },
+        {
+          "brand": "Mobil",
+          "weight": 0.3,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ]
+    },
+    {
+      "item": "mobile phone plan",
+      "product": "Plan Celular",
+      "category": "Communication",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Ilimitado",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Telcel Condesa",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.6
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Telcel",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.6
+        }
+      ]
+    },
+    {
+      "item": "internet fiber",
+      "product": "Internet Fibra Óptica",
+      "category": "Communication",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "300 Mbps",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Totalplay México",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Totalplay",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ]
+    },
+    {
+      "item": "streaming video monthly",
+      "product": "Streaming Video",
+      "category": "Recreation and culture",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Estándar",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Plataforma Digital",
+          "weight": 1.0,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Netflix",
+          "weight": 0.6,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "brand": "HBO Max",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.7
+        }
+      ]
+    },
+    {
+      "item": "gym membership monthly",
+      "product": "Gimnasio Mensual",
+      "category": "Recreation and culture",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Acceso Total",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Smart Fit Centro",
+          "weight": 1.0,
+          "tier": "B",
+          "rating": 4.4
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Smart Fit",
+          "weight": 1.0,
+          "tier": "B",
+          "rating": 4.4
+        }
+      ]
+    },
+    {
+      "item": "paracetamol 500 mg 20 tab",
+      "product": "Paracetamol 500mg",
+      "category": "Health",
+      "unit": "box",
+      "scheduling": {
+        "mode": "hazard",
+        "expected_interval_months": 4.0,
+        "hazard_shape": 2.0,
+        "min_gap_months": 1,
+        "max_gap_months": 8
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Genérico",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Farmacia Similares",
+          "weight": 0.6,
+          "tier": "C",
+          "rating": 4.0
+        },
+        {
+          "merchant": "Farmacia San Pablo",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Similares",
+          "weight": 0.6,
+          "tier": "C",
+          "rating": 4.0
+        },
+        {
+          "brand": "San Pablo",
+          "weight": 0.4,
+          "tier": "A",
+          "rating": 4.8
+        }
+      ]
+    },
+    {
+      "item": "toothpaste 100 ml",
+      "product": "Pasta Dental",
+      "category": "Miscellaneous goods and services",
+      "unit": "piece",
+      "scheduling": {
+        "mode": "hazard",
+        "expected_interval_months": 2.5,
+        "hazard_shape": 3.0,
+        "min_gap_months": 1,
+        "max_gap_months": 5
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "variant": "Total 12",
+      "description_template": "{product} {brand} {variant} {pack_size}{unit}",
+      "description_casing": "natural",
+      "store_preferences": [
+        {
+          "merchant": "Supermercado Central",
+          "weight": 0.8,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "merchant": "Tienda Express",
+          "weight": 0.2,
+          "tier": "B",
+          "rating": 4.2
+        }
+      ],
+      "brand_preferences": [
+        {
+          "brand": "Colgate",
+          "weight": 0.7,
+          "tier": "A",
+          "rating": 4.8
+        },
+        {
+          "brand": "Crest",
+          "weight": 0.3,
+          "tier": "B",
+          "rating": 4.5
+        }
+      ]
+    }
+  ],
+  "scenarios": []
+}

@@ -1,46 +1,688 @@
-"""Command-line interface for the PEIT prototype."""
+"""
+Command-line interface for the Personal Economic Inflation Tracker (PEIT).
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import sys
+from datetime import date
 from pathlib import Path
+from typing import Any
 
-from .core import audit_append, calculate_indices, read_csv
+from peit.core import EVENT_TYPES, MONTH_RE, calculate_indices, read_csv
+from peit.dashboard import create_dashboard, create_index_report
+from peit.ledger import (
+    LedgerDatabase,
+    LedgerEntry,
+    add_entry,
+    get_balance,
+    get_category_breakdown,
+    import_csv,
+    list_entries,
+)
+from peit.server import run_server
 
 
-def main() -> int:
+
+def build_parser() -> argparse.ArgumentParser:
+  """Construct and return the command-line argument parser for PEIT."""
   parser = argparse.ArgumentParser(
-      description="Personal Economic Inflation Tracker"
+      prog="peit",
+      description=(
+          "Personal Economic Inflation Tracker (PEIT) - Command Line Interface"
+      ),
   )
-  parser.add_argument("csv", type=Path, help="monthly receipt CSV")
-  parser.add_argument(
-      "--audit", type=Path, help="append-only JSONL audit path"
+
+  # Primary operational modes
+  mode_group = parser.add_argument_group("Primary Modes")
+  mode_group.add_argument(
+      "--index", type=Path, metavar="CSV_PATH",
+      help=(
+          "Calculate inflation indices from a monthly receipt CSV"
+          "(supports --html, --json, -o, --open)"
+      ),
   )
-  parser.add_argument(
-      "--json", action="store_true", help="emit machine-readable JSON"
+  mode_group.add_argument(
+      "--ledger", type=Path, metavar="LEDGER_PATH",
+      help=(
+          "Path to authoritative JSONL ledger file"
+          "(supports --html, --dashboard, --balance, --list, etc.)"
+      ),
   )
-  args = parser.parse_args()
-  rows, issues = read_csv(args.csv)
-  if issues:
-    for issue in issues:
-      print(f"row {issue.row}: {issue.field}: {issue.message}")
+  mode_group.add_argument(
+      "--serve", action="store_true",
+      help="Launch local synchronization daemon",
+  )
+
+  # Server daemon options
+  server_group = parser.add_argument_group("Server Daemon Options (for --serve)")
+  server_group.add_argument(
+      "--host", type=str, default="127.0.0.1", metavar="HOST",
+      help="Host interface to bind synchronization daemon (default: %(default)s)",
+  )
+  server_group.add_argument(
+      "--port", type=int, default=8000, metavar="PORT",
+      help="Port to bind synchronization daemon (default: %(default)s)",
+  )
+
+  # Ledger operations
+  ledger_group = parser.add_argument_group(
+      "Ledger Operations (requires --ledger)")
+  ledger_group.add_argument(
+      "--import", dest="import_csv", type=Path, metavar="CSV_PATH",
+      help="Import CSV receipts into the ledger",
+  )
+  ledger_group.add_argument(
+      "--rebuild-cache", action="store_true",
+      help="Rebuild sibling SQLite projection cache from JSONL log",
+  )
+  ledger_group.add_argument(
+      "--add", action="store_true",
+      help="Add a direct event/transaction to the ledger",
+  )
+  ledger_group.add_argument(
+      "--balance", action="store_true",
+      help="Compute financial balance summary",
+  )
+  ledger_group.add_argument(
+      "--list", action="store_true",
+      help="Query and list ledger transactions",
+  )
+  ledger_group.add_argument(
+      "--breakdown", action="store_true",
+      help="Compute category expenditure breakdown",
+  )
+  ledger_group.add_argument(
+      "--dashboard", action="store_true",
+      help=(
+          "Generate interactive HTML5 multi-graph visualizer dashboard"
+          "(alias: --html)"
+      ),
+  )
+
+  # Filters & options
+  filter_group = parser.add_argument_group("Filters & Options")
+  filter_group.add_argument(
+      "--html", action="store_true",
+      help=(
+          "Generate HTML output on demand"
+          "(interactive dashboard for --ledger, HTML report for --index)"
+      ),
+  )
+  filter_group.add_argument(
+      "--month", type=str, metavar="YYYY-MM",
+      help="Filter by month in YYYY-MM format",
+  )
+  filter_group.add_argument(
+      "--category", type=str, metavar="CATEGORY",
+      help="Filter by category (or specify category for --add)",
+  )
+  filter_group.add_argument(
+      "--merchant", type=str, metavar="MERCHANT",
+      help="Filter by merchant (or specify merchant for --add)",
+  )
+  filter_group.add_argument(
+      "--event-type", type=str, metavar="EVENT_TYPE",
+      help="Filter by event type (or specify event type for --add)",
+  )
+  filter_group.add_argument(
+      "--account", type=str, default="default:checking", metavar="ACCOUNT",
+      help="Account identifier (default: %(default)s)",
+  )
+  filter_group.add_argument(
+      "--benchmark", type=Path, metavar="BENCHMARK_PATH",
+      help="Path to national benchmark CPI CSV file",
+  )
+  filter_group.add_argument(
+      "-o", "--output", type=Path, metavar="OUTPUT_PATH",
+      help=(
+          "Custom destination file path for generated HTML dashboard or report"
+      ),
+  )
+  filter_group.add_argument(
+      "--open", action="store_true",
+      help="Open generated HTML dashboard or report in default web browser",
+  )
+  filter_group.add_argument(
+      "--force", action="store_true",
+      help="Force overwrite existing entries during import",
+  )
+  filter_group.add_argument(
+      "--json", action="store_true",
+      help="Emit machine-readable JSON output",
+  )
+
+  # Direct transaction addition arguments (for --add)
+  add_group = parser.add_argument_group(
+      "Direct Add Arguments (for --ledger ... --add)"
+  )
+  add_group.add_argument(
+      "--date", type=str, metavar="YYYY-MM-DD",
+      help="Transaction date (YYYY-MM-DD)",
+  )
+  add_group.add_argument(
+      "--amount", type=float, metavar="AMOUNT",
+      help="Signed transaction amount",
+  )
+  add_group.add_argument(
+      "--item", type=str, default="Transaction", metavar="NAME",
+      help="Normalized item key (default: %(default)s)",
+  )
+  add_group.add_argument(
+      "--brand", type=str, default="", metavar="BRAND",
+      help="Brand or manufacturer (default: empty)",
+  )
+  add_group.add_argument(
+      "--pack-size", type=float, default=1.0, metavar="SIZE",
+      help="Units per pack (default: %(default)s)",
+  )
+  add_group.add_argument(
+      "--unit-price", type=float, default=None, metavar="PRICE",
+      help="Unit price (calculated from amount/quantity if omitted)",
+  )
+  add_group.add_argument(
+      "--notes", type=str, default="", metavar="TEXT",
+      help="Optional transaction notes",
+  )
+  add_group.add_argument(
+      "--store-tier", type=str, choices=["A", "B", "C", "D", "E"],
+      default=None, metavar="STORE_TIER",
+      help="Store tier bracket (choices: A, B, C, D, E; default: A)",
+  )
+  add_group.add_argument(
+      "--store-rating", type=float, default=None, metavar="STORE_RATING",
+      help="Store satisfaction rating between 1.0 and 5.0 (default: 5.0)",
+  )
+  add_group.add_argument(
+      "--brand-tier", type=str, choices=["A", "B", "C", "D", "E"],
+      default=None, metavar="BRAND_TIER",
+      help="Brand tier bracket (choices: A, B, C, D, E; default: A)",
+  )
+  add_group.add_argument(
+      "--brand-rating", type=float, default=None, metavar="BRAND_RATING",
+      help="Brand satisfaction rating between 1.0 and 5.0 (default: 5.0)",
+  )
+  add_group.add_argument(
+      "--product-tier", type=str, choices=["A", "B", "C", "D", "E"],
+      default=None, metavar="PRODUCT_TIER",
+      help="Product tier bracket (choices: A, B, C, D, E; default: A)",
+  )
+  add_group.add_argument(
+      "--product-rating", type=float, default=None, metavar="PRODUCT_RATING",
+      help="Product satisfaction rating between 1.0 and 5.0 (default: 5.0)",
+  )
+  add_group.add_argument(
+      "--availability", type=str,
+      choices=["in_stock", "low_stock", "out_of_stock", "discontinued"],
+      default=None, metavar="AVAILABILITY",
+      help="Item availability status (choices: in_stock, low_stock, out_of_stock, discontinued; default: in_stock)",
+  )
+  return parser
+
+
+def format_index_table(report: list[dict[str, Any]]) -> str:
+  """Format inflation index calculation results as a columnar ASCII table."""
+  if not report:
+    return "No inflation index data available."
+
+  headers = [
+      "month", "fixed_basket", "changing_expenditure", "coverage", "MoM"
+  ]
+  rows: list[list[str]] = []
+  for item in report:
+    fb = f"{item['fixed_basket_index']:.2f}" if item.get(
+        "fixed_basket_index"
+    ) is not None else "N/A"
+    ce = f"{item['changing_basket_expenditure_index']:.2f}" if item.get(
+        "changing_basket_expenditure_index"
+    ) is not None else "N/A"
+    cov = f"{item['coverage_percent']}%" if item.get(
+        "coverage_percent"
+    ) is not None else "N/A"
+    mom = f"{item['mom_percent']}" if item.get(
+        "mom_percent"
+    ) is not None else "None"
+    rows.append([str(item.get("month", "")), fb, ce, cov, mom])
+
+  col_widths = [len(h) for h in headers]
+  for r in rows:
+    for i, val in enumerate(r):
+      col_widths[i] = max(col_widths[i], len(val))
+
+  header_str = " | ".join(
+      h.ljust(col_widths[i]) for i, h in enumerate(headers)
+  )
+  separator = "-+-".join("-" * col_widths[i] for i in range(len(headers)))
+  row_strs = [" | ".join(
+      val.rjust(col_widths[i]) if i > 0 else val.ljust(col_widths[i])
+      for i, val in enumerate(r)
+  ) for r in rows]
+  return "\n".join([header_str, separator] + row_strs)
+
+
+def format_balance_table(data: dict[str, Any]) -> str:
+  """Format financial balance results as a clean ASCII summary table."""
+  lines = [
+      "=== Financial Balance Summary ===",
+      f"Total Income:       {data.get('total_income', 0.0):>12.2f}",
+      f"Total Expenditure:  {data.get('total_expenditure', 0.0):>12.2f}",
+      f"Net Transfers:      {data.get('net_transfers', 0.0):>12.2f}",
+      f"Net Refunds:        {data.get('net_refunds', 0.0):>12.2f}",
+      "---------------------------------",
+      f"Net Balance:        {data.get('net_balance', 0.0):>12.2f}",
+  ]
+  by_month = data.get("by_month", {})
+  if by_month:
+    lines.append("")
+    lines.append("Monthly Breakdown:")
+    headers = [
+        "Month", "Income", "Expenditure", "Transfers", "Refunds", "Net Balance"
+    ]
+    m_rows = []
+    for m, vals in sorted(by_month.items()):
+      m_rows.append([
+          m,
+          f"{vals.get('total_income', 0.0):.2f}",
+          f"{vals.get('total_expenditure', 0.0):.2f}",
+          f"{vals.get('net_transfers', 0.0):.2f}",
+          f"{vals.get('net_refunds', 0.0):.2f}",
+          f"{vals.get('net_balance', 0.0):.2f}",
+      ])
+    widths = [len(h) for h in headers]
+    for r in m_rows:
+      for i, val in enumerate(r):
+        widths[i] = max(widths[i], len(val))
+    header_str = " | ".join(h.ljust(widths[i]) for i, h in enumerate(headers))
+    sep = "-+-".join("-" * widths[i] for i in range(len(headers)))
+    r_strs = [" | ".join(
+        val.rjust(widths[i]) if i > 0 else val.ljust(widths[i])
+        for i, val in enumerate(r)
+    ) for r in m_rows]
+    lines.extend([header_str, sep] + r_strs)
+  return "\n".join(lines)
+
+
+def format_list_table(entries: list[LedgerEntry]) -> str:
+  """Format transaction list as a clean columnar ASCII table."""
+  if not entries:
+    return "No matching transactions found."
+
+  headers = [
+      "Date", "Receipt ID", "Merchant", "Category", "Type", "Amount",
+      "Account"
+  ]
+  rows = []
+  for e in entries:
+    rows.append([
+        e.receipt_date,
+        e.receipt_id,
+        e.merchant,
+        e.category,
+        e.event_type,
+        f"{e.paid_total:.2f}",
+        e.account,
+    ])
+  widths = [len(h) for h in headers]
+  for r in rows:
+    for i, val in enumerate(r):
+      widths[i] = max(widths[i], len(val))
+
+  header_str = " | ".join(h.ljust(widths[i]) for i, h in enumerate(headers))
+  sep = "-+-".join("-" * widths[i] for i in range(len(headers)))
+  r_strs = [" | ".join(
+      val.rjust(widths[i]) if i == 5 else val.ljust(widths[i])
+      for i, val in enumerate(r)
+  ) for r in rows]
+  return "\n".join([header_str, sep] + r_strs)
+
+
+def format_breakdown_table(breakdown: list[dict[str, Any]]) -> str:
+  """Format category expenditure breakdown as a clean columnar ASCII table."""
+  if not breakdown:
+    return "No expenditure recorded."
+
+  headers = ["Category", "Total Spent", "Percentage", "Count"]
+  rows = []
+  for b in breakdown:
+    rows.append([
+        str(b.get("category", "")),
+        f"{b.get('total_spent', 0.0):.2f}",
+        f"{b.get('percentage', 0.0):.2f}%",
+        str(b.get("count", 0)),
+    ])
+  widths = [len(h) for h in headers]
+  for r in rows:
+    for i, val in enumerate(r):
+      widths[i] = max(widths[i], len(val))
+
+  header_str = " | ".join(h.ljust(widths[i]) for i, h in enumerate(headers))
+  sep = "-+-".join("-" * widths[i] for i in range(len(headers)))
+  r_strs = [" | ".join(
+      val.rjust(widths[i]) if i > 0 else val.ljust(widths[i])
+      for i, val in enumerate(r)
+  ) for r in rows]
+  return "\n".join([header_str, sep] + r_strs)
+
+
+def main(argv: list[str] | None = None) -> int:
+  """CLI entry point for PEIT."""
+  parser = build_parser()
+  try:
+    args = parser.parse_args(argv)
+  except SystemExit as exc:
+    return exc.code if isinstance(exc.code, int) else 2
+
+  # Mode: Local synchronization daemon
+  if args.serve:
+    if args.index:
+      sys.stderr.write("Error: Cannot specify both --index and --serve.\n")
+      return 2
+    ledger_path = args.ledger if args.ledger else Path("data/ledger.jsonl")
+    host = args.host
+    port = args.port
+    print(f"Starting PEIT synchronization daemon on http://{host}:{port}")
+    print(f"Authoritative ledger: {ledger_path}")
+    print("Press Ctrl+C to stop.")
+    try:
+      run_server(ledger_path=ledger_path, host=host, port=port)
+    except KeyboardInterrupt:
+      print("\nDaemon stopped.")
+    return 0
+
+  # Validation: Exactly one primary mode
+  if not args.index and not args.ledger:
+    sys.stderr.write("Error: Must specify either --index or --ledger.\n")
     return 2
-  if args.audit:
-    audit_append(args.audit, rows, str(args.csv))
-  report = calculate_indices(rows)
-  if args.json:
-    print(json.dumps(report, indent=2))
-  else:
-    print("month | fixed_basket | changing_expenditure | coverage | MoM")
-    for item in report:
-      print(
-          f"{item['month']} | {item['fixed_basket_index']} | "
-          f"{item['changing_basket_expenditure_index']} | "
-          f"{item['coverage_percent']}% | {item['mom_percent']}"
+
+  if args.index and args.ledger:
+    sys.stderr.write("Error: Cannot specify both --index and --ledger.\n")
+    return 2
+
+  # Filter validation: month
+  if args.month and not MONTH_RE.match(args.month):
+    sys.stderr.write(
+        f"Error: Invalid month format '{args.month}'. Expected YYYY-MM.\n"
+    )
+    return 2
+
+  # Handle account filter
+  account_filter = None if (
+      args.account and args.account.lower() in ("all", "*", "none")
+  ) else args.account
+
+  # Mode 1: Inflation index calculation
+  if args.index:
+    # Ensure ledger-specific operations are not given
+    ledger_ops = [
+        args.import_csv is not None,
+        args.rebuild_cache,
+        args.add,
+        args.balance,
+        args.list,
+        args.breakdown,
+    ]
+    if any(ledger_ops):
+      sys.stderr.write(
+          "Error: Ledger operations cannot be used with --index.\n"
       )
+      return 2
+
+    if args.json and (args.html or args.dashboard):
+      sys.stderr.write("Error: Cannot specify both --json and --html.\n")
+      return 2
+
+    if not args.index.exists():
+      sys.stderr.write(f"Error: CSV file not found: {args.index}\n")
+      return 2
+
+    rows, issues = read_csv(args.index)
+    if issues:
+      for issue in issues:
+        sys.stderr.write(f"row {issue.row}: {issue.field}: {issue.message}\n")
+      return 2
+
+    report = calculate_indices(rows)
+    if args.html or args.dashboard:
+      try:
+        out = create_index_report(
+            report=report,
+            csv_path=args.index,
+            output_path=args.output,
+            open_browser=args.open,
+        )
+        print(f"Index HTML report generated successfully at: {out}")
+        return 0
+      except Exception as e:
+        sys.stderr.write(f"Error: {e}\n")
+        return 2
+    elif args.json:
+      print(json.dumps(report, indent=2))
+    else:
+      print(format_index_table(report))
+    return 0
+
+  # Mode 2: Ledger operations
+  assert args.ledger is not None
+
+  op_flags = [
+      args.import_csv is not None,
+      args.rebuild_cache,
+      args.add,
+      args.balance,
+      args.list,
+      args.breakdown,
+      args.dashboard or args.html,
+  ]
+  op_count = sum(bool(x) for x in op_flags)
+  if op_count == 0:
+    sys.stderr.write(
+        "Error: Must specify one ledger operation: "
+        "--import, --rebuild-cache, --add, --balance, --list, --breakdown, "
+        "--dashboard, or --html.\n"
+    )
+    return 2
+  if op_count > 1:
+    sys.stderr.write(
+        "Error: Only one ledger operation may be specified at a time.\n"
+    )
+    return 2
+
+  # Operation 2a: Import CSV
+  if args.import_csv is not None:
+    if not args.import_csv.exists():
+      sys.stderr.write(f"Error: CSV file not found: {args.import_csv}\n")
+      return 2
+    try:
+      account = args.account if args.account else "default:checking"
+      imported, skipped = import_csv(
+          ledger_path=args.ledger,
+          csv_path=args.import_csv,
+          account=account,
+          force=args.force,
+      )
+      print(f"Imported {imported} rows, skipped {skipped} duplicates.")
+      return 0
+    except ValueError as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2b: Rebuild cache
+  if args.rebuild_cache:
+    try:
+      db = LedgerDatabase(args.ledger)
+      db.rebuild_cache()
+      print(f"Cache rebuilt successfully for {args.ledger}.")
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2c: Add event
+  if args.add:
+    missing: list[str] = []
+    if not args.date:
+      missing.append("--date")
+    if args.amount is None:
+      missing.append("--amount")
+    if not args.event_type:
+      missing.append("--event-type")
+    if not args.merchant:
+      missing.append("--merchant")
+
+    if missing:
+      sys.stderr.write(
+          f"Error: Missing required argument(s) for --add: "
+          f"{', '.join(missing)}\n"
+      )
+      return 2
+
+    try:
+      date.fromisoformat(args.date)
+    except ValueError:
+      sys.stderr.write(
+          f"Error: Invalid date format '{args.date}'. Expected YYYY-MM-DD.\n")
+      return 2
+
+    if args.event_type not in EVENT_TYPES:
+      sys.stderr.write(
+          f"Error: Invalid event-type '{args.event_type}'. Must be one of {sorted(EVENT_TYPES)}.\n"
+      )
+      return 2
+
+    category = args.category if args.category else "General"
+    item = args.item if args.item else "Transaction"
+    brand = args.brand if args.brand else ""
+    pack_size = float(args.pack_size) if args.pack_size is not None else 1.0
+    unit_price = args.unit_price
+    store_tier = args.store_tier or "A"
+    store_rating = (
+      float(args.store_rating) if args.store_rating is not None else 5.0
+    )
+    brand_tier = args.brand_tier or "A"
+    brand_rating = (
+      float(args.brand_rating) if args.brand_rating is not None else 5.0
+    )
+    product_tier = args.product_tier or "A"
+    product_rating = (
+      float(args.product_rating) if args.product_rating is not None else 5.0
+    )
+    availability = args.availability or "in_stock"
+    notes = args.notes if args.notes else ""
+    account = args.account if args.account else "default:checking"
+
+    for r_val, r_flag in [
+        (args.store_rating, "--store-rating"),
+        (args.brand_rating, "--brand-rating"),
+        (args.product_rating, "--product-rating"),
+    ]:
+      if r_val is not None and not (1.0 <= float(r_val) <= 5.0):
+        sys.stderr.write(f"Error: {r_flag} must be between 1.0 and 5.0\n")
+        return 2
+
+    try:
+      entry = add_entry(
+          ledger_path=args.ledger,
+          receipt_date=args.date,
+          amount=args.amount,
+          event_type=args.event_type,
+          merchant=args.merchant,
+          category=category,
+          item=item,
+          brand=brand,
+          pack_size=pack_size,
+          unit_price=unit_price,
+          account=account,
+          store_tier=store_tier,
+          store_rating=store_rating,
+          brand_tier=brand_tier,
+          brand_rating=brand_rating,
+          product_tier=product_tier,
+          product_rating=product_rating,
+          availability=availability,
+          notes=notes,
+      )
+      print(
+          f"Added entry {entry.entry_id} ({entry.receipt_date} {entry.merchant} {entry.paid_total} {entry.currency}).")
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2d: Balance
+  if args.balance:
+    try:
+      data = get_balance(args.ledger, account=account_filter, month=args.month)
+      if args.json:
+        print(json.dumps(data, indent=2))
+      else:
+        print(format_balance_table(data))
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2e: List
+  if args.list:
+    try:
+      entries = list_entries(
+          ledger_path=args.ledger,
+          month=args.month,
+          category=args.category,
+          merchant=args.merchant,
+          event_type=args.event_type,
+          account=account_filter,
+      )
+      if args.json:
+        print(json.dumps([e.to_dict() for e in entries], indent=2))
+      else:
+        print(format_list_table(entries))
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2f: Breakdown
+  if args.breakdown:
+    try:
+      data = get_category_breakdown(
+          args.ledger, month=args.month, account=account_filter)
+      if args.json:
+        print(json.dumps(data, indent=2))
+      else:
+        print(format_breakdown_table(data))
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
+  # Operation 2g: Dashboard / HTML
+  if args.dashboard or args.html:
+    try:
+      out = create_dashboard(
+          ledger_path=args.ledger,
+          output_path=args.output,
+          month=args.month,
+          category=args.category,
+          merchant=args.merchant,
+          event_type=args.event_type,
+          account=account_filter,
+          benchmark_path=args.benchmark,
+          open_browser=args.open,
+      )
+      print(f"Dashboard generated successfully at: {out}")
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error: {e}\n")
+      return 2
+
   return 0
 
 
 if __name__ == "__main__":
-  raise SystemExit(main())
+  sys.exit(main())

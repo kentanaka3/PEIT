@@ -14,7 +14,7 @@ PEIT/
 ├── src/      # Python source code
 ├── test/     # Python tests
 ├── util/     # utility scripts, templates, and helpers
-└── web/      # web application source code and static assets
+└── web/      # [planned / unreleased] web application source code and static assets
 ```
 
 ## Custom agents
@@ -65,28 +65,23 @@ smoke test.
 
 ## Python environment
 
-Before running any Python command, agents must activate the project Conda
-environment. The canonical path follows the Makefile convention defined in `PEIT/util/Makefile`:
+Before running Python commands or tests, agents should activate the virtual
+environment or project Conda environment:
 
 ```bash
-# Variables defined in PEIT/util/Makefile:
-#   CONDA_ROOT  ?= $(abspath ../.miniconda3)
-#   CONDA_ENV   ?= PEIT
-#   PYTHON_BIN  ?= $(CONDA_ROOT)/envs/$(CONDA_ENV)/bin/python
-#
-# Activate the environment:
-eval "$("$(abspath ../.miniconda3)"/bin/conda shell.bash hook)"
-conda activate "$(abspath ../.miniconda3/envs/$(CONDA_ENV))"
-```
+# Repository-local Conda environment (Python 3.13):
+conda activate "$PWD/.venv/PEIT"
+export PATH="$CONDA_PREFIX/bin:$PATH"
 
-Do not hardcode the absolute Conda prefix; derive it from the Makefile
-variables so that path changes propagate automatically.
+# Ensure the package is in PYTHONPATH or installed in editable mode:
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+```
 
 ## Data, privacy, and secrets
 
 - Never commit `.env` files, API keys, access tokens, SSH keys, passwords, or
   private prompts.
-- Never commit raw waveforms, large catalogs, model checkpoints, or generated
+- Never commit raw personal receipts, financial transaction ledgers, large catalogs, model checkpoints, or generated
   artifacts. Keep them in the approved storage.
 - Redact credentials, personal data, and internal URLs in examples.
 - Treat external LLM services as untrusted data processors until approved.
@@ -115,7 +110,7 @@ The handler is the authoritative entry point for documentation maintenance:
 
 - `init` creates only missing LLM directories and starter documents; it does
   not recreate deleted legacy helper scripts.
-- `adr` creates a new Architecture Decision Record in `LLM/00_governance/adr/`
+- `adr` creates a new Architecture Decision Record in `doc/adr/`
   with a unique ID, title, and template.
 - `navigate` produces a Markdown inventory with repository-relative paths,
   line counts, and heading locations. Use it to find the relevant context

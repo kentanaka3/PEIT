@@ -1,0 +1,296 @@
+{
+  "name": "mexico_2024",
+  "currency": "MXN",
+  "global_inflation_rate": 0.045,
+  "catalog": [
+    {
+      "item": "milk 1 l",
+      "base_price": 25.00,
+      "volatility": 0.015,
+      "inflation_rate": 0.045,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 49, 95]
+      },
+      "pack_tiers": [
+        {"pack_size": 6, "unit_price_multiplier": 0.92},
+        {"pack_size": 12, "unit_price_multiplier": 0.88}
+      ]
+    },
+    {
+      "item": "white bread 500 g",
+      "base_price": 38.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.040,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "eggs 12 pack",
+      "base_price": 42.00,
+      "volatility": 0.03,
+      "inflation_rate": 0.055,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.25,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 49]
+      },
+      "pack_tiers": [
+        {"pack_size": 2, "unit_price_multiplier": 0.95}
+      ]
+    },
+    {
+      "item": "ground coffee 250 g",
+      "base_price": 85.00,
+      "volatility": 0.02,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.06,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 1.00,
+        "psychological_endings": [99, 90]
+      }
+    },
+    {
+      "item": "rice long grain 1 kg",
+      "base_price": 28.50,
+      "volatility": 0.01,
+      "inflation_rate": 0.038,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "black beans 1 kg",
+      "base_price": 34.00,
+      "volatility": 0.015,
+      "inflation_rate": 0.042,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "chicken breast 1 kg",
+      "base_price": 120.00,
+      "volatility": 0.025,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.25,
+      "charm": {
+        "grid_step": 1.00,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "apples gala 1 kg",
+      "base_price": 45.00,
+      "volatility": 0.03,
+      "inflation_rate": 0.045,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.30,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      },
+      "seasonal_modifiers": {
+        "12": 1.15,
+        "1": 1.15,
+        "2": 1.10,
+        "6": 0.90,
+        "7": 0.85
+      }
+    },
+    {
+      "item": "sparkling water 600 ml",
+      "base_price": 18.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.040,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      },
+      "pack_tiers": [
+        {"pack_size": 6, "unit_price_multiplier": 0.85},
+        {"pack_size": 12, "unit_price_multiplier": 0.80}
+      ]
+    },
+    {
+      "item": "rent monthly",
+      "base_price": 8500.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.060,
+      "menu_cost_band": 0.10,
+      "calvo_jump_prob": 0.08
+    },
+    {
+      "item": "electricity cfe bimonthly",
+      "base_price": 450.00,
+      "volatility": 0.04,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "seasonal_modifiers": {
+        "5": 1.20,
+        "6": 1.30,
+        "7": 1.35,
+        "8": 1.30
+      }
+    },
+    {
+      "item": "natural gas",
+      "base_price": 350.00,
+      "volatility": 0.03,
+      "inflation_rate": 0.045,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "seasonal_modifiers": {
+        "12": 1.25,
+        "1": 1.30,
+        "2": 1.20
+      }
+    },
+    {
+      "item": "metro transit pass",
+      "base_price": 300.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.030,
+      "menu_cost_band": 0.08,
+      "calvo_jump_prob": 0.10
+    },
+    {
+      "item": "gasoline magna 1 l",
+      "base_price": 23.50,
+      "volatility": 0.01,
+      "inflation_rate": 0.045,
+      "menu_cost_band": 0.03,
+      "calvo_jump_prob": 0.40,
+      "charm": {
+        "grid_step": 0.10,
+        "psychological_endings": [99, 89]
+      }
+    },
+    {
+      "item": "mobile phone plan",
+      "base_price": 499.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.035,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 1.00,
+        "psychological_endings": [99]
+      }
+    },
+    {
+      "item": "internet fiber",
+      "base_price": 550.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.040,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 10.00,
+        "psychological_endings": [99, 50, 0]
+      }
+    },
+    {
+      "item": "streaming video monthly",
+      "base_price": 219.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 1.00,
+        "psychological_endings": [99]
+      }
+    },
+    {
+      "item": "gym membership monthly",
+      "base_price": 650.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.045,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 10.00,
+        "psychological_endings": [99, 0]
+      }
+    },
+    {
+      "item": "paracetamol 500 mg 20 tab",
+      "base_price": 45.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.040,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "toothpaste 100 ml",
+      "base_price": 35.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.040,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 0.50,
+        "psychological_endings": [99, 50]
+      }
+    },
+    {
+      "item": "specialty coffee flat white",
+      "base_price": 65.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 1.00,
+        "psychological_endings": [99, 50, 0]
+      }
+    },
+    {
+      "item": "bistro lunch combo",
+      "base_price": 180.00,
+      "volatility": 0.01,
+      "inflation_rate": 0.055,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.20,
+      "charm": {
+        "grid_step": 5.00,
+        "psychological_endings": [99, 50, 0]
+      }
+    },
+    {
+      "item": "dental checkup cleaning",
+      "base_price": 800.00,
+      "volatility": 0.0,
+      "inflation_rate": 0.050,
+      "menu_cost_band": 0.05,
+      "calvo_jump_prob": 0.15,
+      "charm": {
+        "grid_step": 50.00,
+        "psychological_endings": [0]
+      }
+    }
+  ]
+}
