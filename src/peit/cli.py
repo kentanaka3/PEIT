@@ -12,6 +12,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from peit.auth import DeviceRegistry, PairingManager, generate_self_signed_cert, get_cert_fingerprint
 from peit.core import MONTH_RE, calculate_indices, read_csv
 from peit.dashboard import create_dashboard, create_index_report
 from peit.ledger import (
@@ -24,7 +25,7 @@ from peit.ledger import (
     list_entries,
 )
 from peit.schema import Availability, EventType, QualityTier
-from peit.server import run_server
+from peit.server import create_server, run_server
 
 
 
@@ -57,9 +58,21 @@ def build_parser() -> argparse.ArgumentParser:
       "--serve", action="store_true",
       help="Launch local synchronization daemon",
   )
+  mode_group.add_argument(
+      "--pair", action="store_true",
+      help="Initiate an interactive 5-minute terminal pairing session for edge mobile devices",
+  )
+  mode_group.add_argument(
+      "--list-devices", action="store_true",
+      help="List all authorized edge mobile devices in the pairing registry",
+  )
+  mode_group.add_argument(
+      "--revoke-device", type=str, metavar="DEVICE_ID",
+      help="Revoke access for a specific authorized device ID",
+  )
 
   # Server daemon options
-  server_group = parser.add_argument_group("Server Daemon Options (for --serve)")
+  server_group = parser.add_argument_group("Server Daemon Options (for --serve / --pair)")
   server_group.add_argument(
       "--host", type=str, default="127.0.0.1", metavar="HOST",
       help="Host interface to bind synchronization daemon (default: %(default)s)",
@@ -71,6 +84,26 @@ def build_parser() -> argparse.ArgumentParser:
   server_group.add_argument(
       "--broadcast", action=argparse.BooleanOptionalAction, default=True,
       help="Advertise service via mDNS/Zeroconf on local network (default: True, use --no-broadcast to disable)",
+  )
+  server_group.add_argument(
+      "--insecure-lan", "--no-auth", action="store_true", dest="insecure_lan",
+      help="Disable cryptographic authentication and allow unauthenticated sync push (developer mode)",
+  )
+  server_group.add_argument(
+      "--device-registry", type=Path, metavar="PATH",
+      help="Custom path to paired devices registry JSON (default: sibling .peit_paired_devices.json)",
+  )
+  server_group.add_argument(
+      "--tls", action="store_true",
+      help="Generate and enable self-signed TLS certificate for local HTTPS",
+  )
+  server_group.add_argument(
+      "--cert", type=Path, metavar="CERT_PATH",
+      help="Path to custom TLS certificate (PEM)",
+  )
+  server_group.add_argument(
+      "--key", type=Path, metavar="KEY_PATH",
+      help="Path to custom TLS private key (PEM)",
   )
 
   # Ledger operations
@@ -380,21 +413,137 @@ def main(argv: list[str] | None = None) -> int:
   except SystemExit as exc:
     return exc.code if isinstance(exc.code, int) else 2
 
+  # Helper to resolve device registry path
+  def _get_registry_path() -> Path:
+    if args.device_registry:
+      return Path(args.device_registry).resolve()
+    base_ledger = args.ledger if args.ledger else Path("data/ledger.jsonl")
+    return Path(base_ledger).resolve().parent / ".peit_paired_devices.json"
+
+  # Mode: List authorized devices
+  if args.list_devices:
+    reg_path = _get_registry_path()
+    registry = DeviceRegistry(reg_path)
+    devices = registry.list_devices()
+    if not devices:
+      print("No authorized devices found in registry.")
+      return 0
+    print(f"Authorized Paired Devices ({len(devices)}):")
+    print(f"{'DEVICE ID':<36} {'DEVICE NAME':<20} {'PAIRED AT':<20} {'LAST SEEN':<20}")
+    print("-" * 100)
+    for d in devices:
+      print(f"{d.device_id:<36} {d.device_name:<20} {d.paired_at:<20} {d.last_seen_at:<20}")
+    return 0
+
+  # Mode: Revoke authorized device
+  if args.revoke_device:
+    reg_path = _get_registry_path()
+    registry = DeviceRegistry(reg_path)
+    dev_id = args.revoke_device.strip()
+    if registry.revoke_device(dev_id):
+      print(f"Device '{dev_id}' successfully revoked from registry.")
+      return 0
+    else:
+      sys.stderr.write(f"Error: Device '{dev_id}' not found in registry.\n")
+      return 1
+
+  # Mode: Interactive pairing session
+  if args.pair:
+    ledger_path = args.ledger if args.ledger else Path("data/ledger.jsonl")
+    reg_path = _get_registry_path()
+    host = args.host
+    port = args.port
+    secure = not args.insecure_lan
+
+    server = create_server(
+        ledger_path=ledger_path,
+        host=host,
+        port=port,
+        secure=secure,
+        device_registry_path=reg_path,
+    )
+    actual_port = server.server_address[1]
+    session_data = server.pairing_manager.initiate_pairing(ttl=300, host=host, port=actual_port)
+
+    print("=" * 64)
+    print(" PEIT LAN PAIRING SECURITY HANDSHAKE")
+    print("=" * 64)
+    print(f"  One-Time 6-Digit PIN:  {session_data['pin']}")
+    print(f"  Session ID:            {session_data['session_id']}")
+    print(f"  Time-To-Live:          5 minutes (300 seconds)")
+    print(f"  Pairing URI / QR:      {session_data['pairing_uri']}")
+    print("=" * 64)
+    print(f"Server listening on http://{host}:{actual_port} ...")
+    print("Open the PEIT mobile app, scan or enter the 6-digit PIN.")
+    print("Press Ctrl+C to cancel pairing.")
+
+    import threading
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+
+    try:
+      import time
+      start_wait = time.time()
+      while time.time() - start_wait < 300:
+        time.sleep(1.0)
+        # Check if paired
+        with server.lock:
+          if not server.pairing_manager.is_pairing_active:
+            print("\nPairing handshake completed or expired.")
+            break
+    except KeyboardInterrupt:
+      print("\nPairing session aborted by user.")
+    finally:
+      server.shutdown()
+      server.server_close()
+    return 0
+
   # Mode: Local synchronization daemon
   if args.serve:
     if args.index:
       sys.stderr.write("Error: Cannot specify both --index and --serve.\n")
       return 2
     ledger_path = args.ledger if args.ledger else Path("data/ledger.jsonl")
+    reg_path = _get_registry_path()
     host = args.host
     port = args.port
     broadcast = bool(args.broadcast)
-    print(f"Starting PEIT synchronization daemon on http://{host}:{port}")
+    secure = not args.insecure_lan
+
+    cert_path = args.cert
+    key_path = args.key
+    if args.tls and (not cert_path or not key_path):
+      tls_dir = Path.home() / ".peit" / "tls"
+      tls_dir.mkdir(parents=True, exist_ok=True)
+      cert_path = tls_dir / "peit_cert.pem"
+      key_path = tls_dir / "peit_key.pem"
+      if not cert_path.exists() or not key_path.exists():
+        fingerprint = generate_self_signed_cert(cert_path, key_path, host=host)
+        print(f"Generated self-signed TLS certificate at {cert_path}")
+        print(f"Certificate SHA-256 Fingerprint: {fingerprint}")
+      else:
+        fingerprint = get_cert_fingerprint(cert_path)
+        print(f"Using TLS certificate: {cert_path}")
+        print(f"Certificate SHA-256 Fingerprint: {fingerprint}")
+
+    proto = "https" if (cert_path and key_path) else "http"
+    sec_mode = "SECURE (Authenticated)" if secure else "INSECURE LAN (No-auth)"
+    print(f"Starting PEIT synchronization daemon on {proto}://{host}:{port} [{sec_mode}]")
     print(f"Authoritative ledger: {ledger_path}")
+    print(f"Device registry: {reg_path}")
     print(f"Local mDNS broadcast: {'enabled' if broadcast else 'disabled'}")
     print("Press Ctrl+C to stop.")
     try:
-      run_server(ledger_path=ledger_path, host=host, port=port, broadcast=broadcast)
+      run_server(
+          ledger_path=ledger_path,
+          host=host,
+          port=port,
+          broadcast=broadcast,
+          secure=secure,
+          device_registry_path=reg_path,
+          certfile=cert_path,
+          keyfile=key_path,
+      )
     except KeyboardInterrupt:
       print("\nDaemon stopped.")
     return 0

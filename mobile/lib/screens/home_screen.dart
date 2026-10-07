@@ -4,19 +4,27 @@ import '../controllers/receipt_review_controller.dart';
 import '../data/database.dart';
 import '../models/receipt_entry.dart';
 import '../ocr/parser.dart';
+import '../services/pairing_service.dart';
+import '../services/secure_storage_service.dart';
 import '../services/sync_service.dart';
 import 'add_entry_screen.dart';
+import 'dashboard_screen.dart';
+import 'pairing_dialog.dart';
 import 'receipt_card_stream_screen.dart';
 
 /// Main Dashboard Screen displaying local statistics, sync controls, LAN connection target, and recent transactions.
 class HomeScreen extends StatefulWidget {
   final AppDatabase database;
   final SyncService syncService;
+  final SecureStorageService? secureStorage;
+  final PairingService? pairingService;
 
   const HomeScreen({
     super.key,
     required this.database,
     required this.syncService,
+    this.secureStorage,
+    this.pairingService,
   });
 
   @override
@@ -28,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _pendingSync = 0;
   bool _isSyncing = false;
   bool _isDiscovering = false;
+  bool _isPaired = false;
   String _syncProgressText = '';
   ServerHealth? _serverHealth;
   List<ReceiptEntryModel> _recentEntries = [];
@@ -37,6 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _refreshData();
     _checkServer();
+    _checkPairingStatus();
+  }
+
+  Future<void> _checkPairingStatus() async {
+    if (widget.secureStorage != null) {
+      final paired = await widget.secureStorage!.isPaired();
+      if (mounted) {
+        setState(() {
+          _isPaired = paired;
+        });
+      }
+    }
   }
 
   void _refreshData() {
@@ -159,6 +180,22 @@ class _HomeScreenState extends State<HomeScreen> {
     if (updated == true) {
       await _checkServer();
     }
+  }
+
+  void _showPairingDialog() {
+    if (widget.pairingService == null || widget.secureStorage == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => PairingDialog(
+        pairingService: widget.pairingService!,
+        secureStorage: widget.secureStorage!,
+        currentServerUrl: widget.syncService.baseUrl,
+        onPairingChanged: () {
+          _checkPairingStatus();
+        },
+      ),
+    );
   }
 
   Future<void> _syncNow() async {
@@ -298,6 +335,25 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('PEIT Mobile'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.analytics_outlined),
+            tooltip: 'Econometric Dashboard',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => DashboardScreen(database: widget.database),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              _isPaired ? Icons.verified_user : Icons.phonelink_lock,
+              color: _isPaired ? Colors.green.shade400 : null,
+            ),
+            tooltip: _isPaired ? 'Paired with Desktop' : 'Device Unpaired (Tap to Pair)',
+            onPressed: _showPairingDialog,
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_ethernet),
             tooltip: 'Server Settings',
             onPressed: _showServerSettingsDialog,
@@ -308,6 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               _refreshData();
               _checkServer();
+              _checkPairingStatus();
             },
           ),
         ],
@@ -396,6 +453,49 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    // Pairing Security Banner
+                    InkWell(
+                      onTap: _showPairingDialog,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _isPaired ? Colors.green.shade50 : Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _isPaired ? Colors.green.shade200 : Colors.amber.shade300,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _isPaired ? Icons.lock_outline : Icons.lock_open,
+                              size: 16,
+                              color: _isPaired ? Colors.green.shade800 : Colors.amber.shade900,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _isPaired
+                                    ? 'Paired with Desktop Daemon (HMAC Secured)'
+                                    : 'Device Unpaired (Tap to Enter PIN & Pair)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _isPaired ? Colors.green.shade900 : Colors.amber.shade900,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 16,
+                              color: _isPaired ? Colors.green.shade800 : Colors.amber.shade800,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const Divider(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -429,7 +529,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+
+            // Prominent Dashboard Quick-Access Card
+            Card(
+              elevation: 2,
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  child: const Icon(Icons.insights),
+                ),
+                title: const Text(
+                  'Econometric Dashboard',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Real-time cash flow, category breakdown & personal inflation index',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => DashboardScreen(database: widget.database),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
 
             // Recent Transactions Header
             Row(

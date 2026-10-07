@@ -9,7 +9,7 @@ assistant working in this repository.
 PEIT/
 ├── config/   # configuration files, templates, and project data definitions
 ├── data/     # raw and processed datasets
-├── doc/      # thesis, reports, figures, and supporting documentation
+├── doc/      # thesis, reports, figures, and documentation (see doc/README.md)
 ├── mobile/   # Flutter mobile client (OCR, Drift SQLite, LAN sync)
 ├── src/      # Python source code
 ├── test/     # Python tests

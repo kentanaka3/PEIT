@@ -3,6 +3,9 @@
 import csv
 import hashlib
 from pathlib import Path
+import re
+import subprocess
+import sys
 
 import peit
 from peit.schema import (
@@ -295,3 +298,145 @@ def test_column_definition():
   assert col.name == "paid_total"
   assert col.sqlite_type == "REAL"
   assert col.is_required is True
+
+
+# ============================================================================
+# Suite 6: Cross-Platform Dart Parity & Synchronizer Tool
+# ============================================================================
+
+
+DART_SCHEMA_PATH = REPO_ROOT / "mobile" / "lib" / "data" / "schema_constants.dart"
+DART_TEST_PATH = REPO_ROOT / "mobile" / "test" / "schema_constants_test.dart"
+
+
+def _parse_dart_list(content: str, variable_name: str) -> list[str]:
+  """Parse a List<String> constant from Dart source code."""
+  pattern = rf"const\s+List<String>\s+{variable_name}\s*=\s*\[(.*?)\];"
+  match = re.search(pattern, content, re.DOTALL)
+  assert match, f"Could not find Dart list '{variable_name}'"
+  raw_items = match.group(1)
+  items = [
+      item.strip().strip("'\"")
+      for item in raw_items.split(",")
+      if item.strip()
+  ]
+  return items
+
+
+def _parse_dart_enum_values(content: str, enum_name: str) -> set[str]:
+  """Parse string values of a Dart enum definition."""
+  pattern = rf"enum\s+{enum_name}\s*\{{(.*?)\n\s*final\s+String\s+value;"
+  match = re.search(pattern, content, re.DOTALL)
+  assert match, f"Could not find Dart enum '{enum_name}'"
+  raw_body = match.group(1)
+  values = re.findall(r"\w+\(['\"]([^'\"]+)['\"]\)", raw_body)
+  return set(values)
+
+
+def test_cross_platform_dart_receipt_columns():
+  """mobile/lib/data/schema_constants.dart receiptColumns strictly matches RECEIPT_COLUMNS."""
+  assert DART_SCHEMA_PATH.exists(), f"Missing Dart schema at {DART_SCHEMA_PATH}"
+  dart_content = DART_SCHEMA_PATH.read_text(encoding="utf-8")
+  dart_receipt_columns = _parse_dart_list(dart_content, "receiptColumns")
+
+  # Exact 25 items, exact names, exact order
+  assert len(dart_receipt_columns) == 25
+  assert len(dart_receipt_columns) == len(RECEIPT_COLUMNS)
+  assert tuple(dart_receipt_columns) == RECEIPT_COLUMNS
+
+
+def test_cross_platform_dart_ledger_columns():
+  """mobile/lib/data/schema_constants.dart ledgerColumns strictly matches LEDGER_COLUMNS."""
+  assert DART_SCHEMA_PATH.exists(), f"Missing Dart schema at {DART_SCHEMA_PATH}"
+  dart_content = DART_SCHEMA_PATH.read_text(encoding="utf-8")
+  dart_ledger_columns = _parse_dart_list(dart_content, "ledgerColumns")
+
+  # Exact 29 items, exact order
+  assert len(dart_ledger_columns) == 29
+  assert len(dart_ledger_columns) == len(LEDGER_COLUMNS)
+  assert tuple(dart_ledger_columns) == LEDGER_COLUMNS
+
+
+def test_cross_platform_dart_enums():
+  """Dart enums EventType, Availability, and QualityTier match Python enums."""
+  assert DART_SCHEMA_PATH.exists(), f"Missing Dart schema at {DART_SCHEMA_PATH}"
+  dart_content = DART_SCHEMA_PATH.read_text(encoding="utf-8")
+
+  # EventType (5)
+  dart_event_types = _parse_dart_enum_values(dart_content, "EventType")
+  python_event_types = {e.value for e in EventType}
+  assert len(dart_event_types) == 5
+  assert dart_event_types == python_event_types
+
+  # Availability (4)
+  dart_availabilities = _parse_dart_enum_values(dart_content, "Availability")
+  python_availabilities = {a.value for a in Availability}
+  assert len(dart_availabilities) == 4
+  assert dart_availabilities == python_availabilities
+
+  # QualityTier (5)
+  dart_tiers = _parse_dart_enum_values(dart_content, "QualityTier")
+  python_tiers = {t.value for t in QualityTier}
+  assert len(dart_tiers) == 5
+  assert dart_tiers == python_tiers
+
+
+def test_cross_platform_dart_bounds():
+  """Dart rating bounds (1.0, 5.0) and recognized currencies match Python schema."""
+  assert DART_SCHEMA_PATH.exists(), f"Missing Dart schema at {DART_SCHEMA_PATH}"
+  dart_content = DART_SCHEMA_PATH.read_text(encoding="utf-8")
+
+  # Rating bounds
+  min_match = re.search(r"const\s+double\s+minRating\s*=\s*([0-9.]+);", dart_content)
+  max_match = re.search(r"const\s+double\s+maxRating\s*=\s*([0-9.]+);", dart_content)
+  assert min_match and float(min_match.group(1)) == MIN_RATING == 1.0
+  assert max_match and float(max_match.group(1)) == MAX_RATING == 5.0
+
+  # Currencies
+  curr_match = re.search(
+      r"const\s+Set<String>\s+recognizedCurrencies\s*=\s*\{(.*?)\};",
+      dart_content,
+  )
+  assert curr_match
+  dart_currencies = {
+      c.strip().strip("'\"")
+      for c in curr_match.group(1).split(",")
+      if c.strip()
+  }
+  assert dart_currencies == set(RECOGNIZED_CURRENCIES) == {"MXN", "USD", "EUR", "CAD"}
+
+
+def test_cross_platform_hash_parity_vectors():
+  """Python compute_entry_id matches all test vectors from mobile schema test."""
+  # Vector 1: milk 1 l
+  assert (
+      compute_entry_id("rec-01", "milk 1 l", -2.5, "2026-01-15")
+      == compute_entry_id("rec-01", "milk 1 l", "-2.50", "2026-01-15")
+      == compute_entry_id("rec-01", "milk 1 l", -2.500000, "2026-01-15")
+  )
+
+  # Vector 2: mobile sync test vectors
+  assert (
+      compute_entry_id("rec-001", "milk 1 l", -2.50, "2026-01-15")
+      == "90b55482be333df935738569bf6eff4180c6f5fa9d8b265dab3bca3f700c97f1"
+  )
+  assert (
+      compute_entry_id("rec-004", "salary payment", 15000.0, "2026-04-01")
+      == "ff99bb83a577f8691107e2e939b49207de0b11bf335665a3ed8fef8a72a37fc2"
+  )
+
+  # Vector 3: negative-zero clamping vector
+  neg_zero_expected = "2b4e8d7009cc014ecbf3a7886f7dbcc493975fceadd64acf3c0ae63824b9f1a3"
+  assert compute_entry_id("r1", "sample item", -0.0, "2026-01-01") == neg_zero_expected
+  assert compute_entry_id("r1", "sample item", 0.0, "2026-01-01") == neg_zero_expected
+  assert compute_entry_id("r1", "sample item", "0", "2026-01-01") == neg_zero_expected
+  assert compute_entry_id("r1", "sample item", 0, "2026-01-01") == neg_zero_expected
+
+
+def test_schema_synchronizer_tool_check_clean():
+  """util/generate_mobile_schema.py --check exits 0 on synchronized schema."""
+  import subprocess
+
+  cmd = [sys.executable, str(REPO_ROOT / "util" / "generate_mobile_schema.py"), "--check"]
+  result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+  assert result.returncode == 0, f"Check failed: {result.stderr or result.stdout}"

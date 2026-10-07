@@ -8,6 +8,18 @@ of production compatibility.
 
 ### Added
 
+- **Single Source of Truth (SSOT) Architecture Restructuring (`src/peit/schema.py`, `mobile/lib/data/schema_constants.dart`, `util/generate_mobile_schema.py`)**:
+  - Implemented canonical Python SSOT module (`src/peit/schema.py`) using strictly Python standard library:
+    - Mastered 25-column receipt schema (`RECEIPT_COLUMNS`), 4-column ledger envelope (`LEDGER_ENVELOPE_COLUMNS`), 29-column SQLite projection sequence (`LEDGER_COLUMNS`), and 2-column mobile sync envelope (`MOBILE_SYNC_COLUMNS`).
+    - Standardized domain enums: `EventType`, `Availability`, `QualityTier`, rating bounds `[1.0, 5.0]`, and recognized currencies `{'MXN', 'USD', 'EUR', 'CAD'}`.
+    - Centralized deterministic SHA-256 identity hashing (`compute_entry_id`) with IEEE-754 **negative-zero clamp safeguard** (`abs(num_val) == 0.0 -> 0.0`) preventing hash divergence between `-0.0` and `0.0`.
+    - Centralized financial sign normalizers (`normalize_expense_sign`, `normalize_income_sign`, `normalize_surcharge_sign`, `normalize_discount_sign`).
+  - Refactored `src/peit/core.py`, `src/peit/ledger.py`, `src/peit/server.py`, `src/peit/cli.py`, `src/peit/dashboard.py`, `src/peit/profiler/generator.py`, and `src/peit/ocr/models.py` to bind directly to `peit.schema`, eliminating duplicated column lists and magic string literals.
+  - Implemented pure Dart Single Source of Truth (`mobile/lib/data/schema_constants.dart`) mirrored across Flutter data models, Drift tables, and OCR pipelines.
+  - Built zero-dependency CLI tool `util/generate_mobile_schema.py` supporting `--check` (strict drift detection in CI) and `--write` (automated code generation).
+  - Implemented comprehensive `schema` test suite in `test/test_schema.py` (22 tests) asserting bit-for-bit parity with `config/receipt_schema.csv` and cross-platform Dart AST parity.
+  - Expanded automated test coverage to **164 tests across 11 suites** in `test/run_tests.sh`.
+
 - **Desktop Synchronization Daemon (`src/peit/server.py`, `peit --serve`)**:
   - Implemented zero-dependency HTTP REST synchronization server using Python standard library `http.server.ThreadingHTTPServer`.
   - Added REST API endpoints:

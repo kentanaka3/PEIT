@@ -22,7 +22,8 @@ results require source and data provenance plus human review. If documentation
 and executable code disagree, report the discrepancy and inspect the
 executable source before drawing conclusions.
 
-For PEIT, verify receipt fields against `config/receipt_schema.csv` and index
-claims against `src/peit/core.py` and `test/test_core.py`. Treat the conference
-abstract in `doc/` as a presentation draft, not as evidence of unimplemented
-features.
+For PEIT, verify receipt fields against `config/receipt_schema.csv` and
+`src/peit/schema.py`, and index claims against `src/peit/core.py`. Consult
+[`doc/README.md`](doc/README.md) for the authoritative documentation map. Treat
+the conference abstract in `doc/showcase/` as a presentation draft, not as
+evidence of unimplemented features.

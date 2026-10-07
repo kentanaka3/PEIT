@@ -18,6 +18,16 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from peit.auth import (
+    DEFAULT_PAIRING_TTL_SECONDS,
+    DeviceRegistry,
+    NonceTracker,
+    PairingManager,
+    generate_bearer_token,
+    generate_self_signed_cert,
+    get_cert_fingerprint,
+    validate_timestamp_freshness,
+)
 from peit.core import calculate_indices, validate_rows
 from peit.ledger import LedgerDatabase, LedgerEntry
 from peit.schema import EventType, RECEIPT_COLUMNS, compute_entry_id
@@ -96,11 +106,15 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
               "service": "PEIT Synchronization Daemon",
               "status": "ok",
               "version": VERSION,
+              "auth_enabled": self.server.secure,
+              "pairing_active": self.server.pairing_manager.is_pairing_active,
               "endpoints": [
                   "/api/v1/health",
                   "/api/v1/summary",
                   "/api/v1/entries",
                   "/api/v1/sync/push",
+                  "/api/v1/pair/initiate",
+                  "/api/v1/pair/confirm",
               ],
           },
       )
@@ -114,7 +128,7 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
       )
 
   def _handle_health(self) -> None:
-    """Return daemon health, ledger info, and receipt schema column count."""
+    """Return daemon health, ledger info, auth status, and schema column count."""
     with self.server.lock:
       count = get_ledger_entry_count(self.server.db)
     payload = {
@@ -123,6 +137,8 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
         "ledger": str(self.server.ledger_path),
         "entry_count": count,
         "schema_columns": len(RECEIPT_COLUMNS),
+        "auth_enabled": self.server.secure,
+        "pairing_active": self.server.pairing_manager.is_pairing_active,
     }
     self.send_json(200, payload)
 
@@ -204,11 +220,15 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
     self.send_json(200, payload)
 
   def do_POST(self) -> None:
-    """Handle POST requests for synchronization push."""
+    """Handle POST requests for sync push and device pairing."""
     parsed = urlparse(self.path)
     path = parsed.path.rstrip("/")
     if path in ("/api/v1/sync/push", "/sync/push"):
       self._handle_sync_push()
+    elif path in ("/api/v1/pair/initiate", "/pair/initiate"):
+      self._handle_pair_initiate()
+    elif path in ("/api/v1/pair/confirm", "/pair/confirm"):
+      self._handle_pair_confirm()
     else:
       self.send_json(
           404,
@@ -220,6 +240,9 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
 
   def _handle_sync_push(self) -> None:
     """Process incoming receipt entries, validate against schema, and append."""
+    if not self._authenticate_sync_request():
+      return
+
     content_length_hdr = self.headers.get("Content-Length")
     if not content_length_hdr:
       self.send_json(
@@ -413,7 +436,7 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
 
 
 class PEITHTTPServer(ThreadingHTTPServer):
-  """Threading HTTP server with attached LedgerDatabase instance and lock."""
+  """Threading HTTP server with attached LedgerDatabase, security registry, and lock."""
 
   daemon_threads = True
   allow_reuse_address = True
@@ -423,6 +446,10 @@ class PEITHTTPServer(ThreadingHTTPServer):
       server_address: tuple[str, int],
       RequestHandlerClass: type[BaseHTTPRequestHandler],
       ledger_path: str | Path,
+      secure: bool = True,
+      device_registry_path: str | Path | None = None,
+      certfile: str | Path | None = None,
+      keyfile: str | Path | None = None,
   ):
     super().__init__(server_address, RequestHandlerClass)
     self.ledger_path = Path(ledger_path).resolve()
@@ -434,6 +461,10 @@ def create_server(
     ledger_path: str | Path,
     host: str = "127.0.0.1",
     port: int = 8000,
+    secure: bool = True,
+    device_registry_path: str | Path | None = None,
+    certfile: str | Path | None = None,
+    keyfile: str | Path | None = None,
 ) -> PEITHTTPServer:
   """Create and configure the PEIT ThreadingHTTPServer instance.
 
@@ -441,12 +472,22 @@ def create_server(
     ledger_path: Path to authoritative JSONL ledger file.
     host: Host address interface (default: 127.0.0.1).
     port: Port number (default: 8000, or 0 for ephemeral OS assignment).
+    secure: If True (default), enforce authorization tokens and replay protections on sync.
+    device_registry_path: Optional path for device registry JSON.
+    certfile: Optional path to PEM TLS certificate.
+    keyfile: Optional path to PEM TLS private key.
 
   Returns:
     Configured PEITHTTPServer instance.
   """
   return PEITHTTPServer(
-      (host, port), PEITRequestHandler, ledger_path=ledger_path
+      (host, port),
+      PEITRequestHandler,
+      ledger_path=ledger_path,
+      secure=secure,
+      device_registry_path=device_registry_path,
+      certfile=certfile,
+      keyfile=keyfile,
   )
 
 
@@ -455,17 +496,43 @@ def run_server(
     host: str = "127.0.0.1",
     port: int = 8000,
     broadcast: bool = True,
+    secure: bool = True,
+    device_registry_path: str | Path | None = None,
+    certfile: str | Path | None = None,
+    keyfile: str | Path | None = None,
 ) -> None:
   """Run the synchronization daemon until interrupted by signal or shutdown."""
-  server = create_server(ledger_path, host=host, port=port)
+  server = create_server(
+      ledger_path,
+      host=host,
+      port=port,
+      secure=secure,
+      device_registry_path=device_registry_path,
+      certfile=certfile,
+      keyfile=keyfile,
+  )
   actual_port = server.server_address[1]
+  proto = "https" if (certfile and keyfile) else "http"
+  mode_str = "SECURE (Authenticated)" if secure else "INSECURE (No-auth)"
   logger.info(
-      "PEIT synchronization daemon running on http://%s:%d", host, actual_port
+      "PEIT synchronization daemon running on %s://%s:%d [%s]",
+      proto,
+      host,
+      actual_port,
+      mode_str,
   )
 
   zc_registration = None
   if broadcast:
-    zc_registration = register_zeroconf_service(actual_port)
+    zc_properties = {
+        "version": VERSION,
+        "schema": "25",
+        "secure": "1" if secure else "0",
+        "tls": "1" if (certfile and keyfile) else "0",
+    }
+    zc_registration = register_zeroconf_service(
+        actual_port, properties=zc_properties
+    )
 
   def _sig_handler(signum: int, frame: Any) -> None:
     logger.info("Received signal %d, stopping server...", signum)

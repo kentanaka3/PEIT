@@ -35,8 +35,8 @@ receipt source → normalized line observations → validated ledger
        → month-over-month comparison
 ```
 
-`description`, amounts, and dates remain observations. The `item`, `brand`,
-and categories are analyst-controlled matching labels. Indices are derived
+`item`, amounts, and dates remain observations (`notes` stores optional freeform context). The `brand`,
+category, unit, and quality tiers are analyst-controlled matching labels. Indices are derived
 values; estimates, forecasts, and hypotheses must remain explicitly labelled and
 are never silently promoted to observations.
 
@@ -221,13 +221,14 @@ python -m peit.profiler generate \
 
 ## Testing & Quality Assurance
 
-PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` across 10 project suites (`core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`):
+PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` across 11 project suites (`schema`, `core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`):
 
 ```bash
 # Run all tests
 bash test/run_tests.sh --all
 
 # Run specific test suites
+bash test/run_tests.sh --suite schema        # Canonical SSOT, cross-platform parity & hash invariants
 bash test/run_tests.sh --suite ocr_benchmark # Real receipt benchmark suite (CER, WER, F1)
 bash test/run_tests.sh --suite ocr_canvas    # Synthetic thermal receipt canvas & distortions
 bash test/run_tests.sh --suite ocr           # Heuristic receipt parser & 25-column conversion
@@ -249,12 +250,20 @@ bash test/run_tests.sh -k "sync"
 bash test/run_tests.sh -k "ocr"
 ```
 
-## Further reading
+## Documentation & Architecture
 
-- [`doc/ledger.md`](doc/ledger.md): Signed transaction ledger architecture and complete technical reference.
-- [`doc/dashboard.md`](doc/dashboard.md): Interactive multi-graph visualizer dashboard and on-demand HTML reports.
-- [`doc/mobile_phase4_hybrid_architecture.md`](doc/mobile_phase4_hybrid_architecture.md): Hybrid Card Stream & Data Grid mobile architecture with On-Device OCR.
-- [`doc/mobile_ui_ux_capture.md`](doc/mobile_ui_ux_capture.md): Mobile capture initiation modes, historical inheritance, and photo privacy policy.
-- [`PLAN_PROFILER.md`](PLAN_PROFILER.md): Architectural design for the Profile × Market simulation engine and Schema specification.
-- [`config/receipt_schema.csv`](config/receipt_schema.csv): Schema 25-column receipt specification and data dictionary.
-- [`doc/showcase/peit.tex`](doc/showcase/peit.tex): Conference demonstrator draft.
+Comprehensive technical guides, specifications, and architecture decision records are maintained under [`doc/`](doc/):
+
+- [`doc/README.md`](doc/README.md): **Documentation Map & Index**
+- **Architecture**:
+  - [`doc/architecture/ssot_resilience.md`](doc/architecture/ssot_resilience.md): SSOT, drift prevention & self-healing dual persistence.
+  - [`doc/architecture/mobile_hybrid.md`](doc/architecture/mobile_hybrid.md): Hybrid Card Stream & Data Grid mobile architecture.
+- **Subsystems**:
+  - [`doc/subsystems/ledger.md`](doc/subsystems/ledger.md): Signed transaction ledger architecture and complete technical reference.
+  - [`doc/subsystems/dashboard.md`](doc/subsystems/dashboard.md): Interactive multi-graph visualizer dashboard and on-demand HTML reports.
+  - [`doc/subsystems/profiler.md`](doc/subsystems/profiler.md): Architectural design for Profile × Market simulation engine.
+  - [`doc/subsystems/mobile.md`](doc/subsystems/mobile.md): Mobile capture initiation modes, review workflows, and photo privacy policy.
+- **Specifications & Showcase**:
+  - [`config/receipt_schema.csv`](config/receipt_schema.csv): Authoritative 25-column receipt specification and data dictionary.
+  - [`doc/specs/RFC-001_personal_welfare_metrics.md`](doc/specs/RFC-001_personal_welfare_metrics.md): Personal Welfare & Inflation Metric Specification (RFC).
+  - [`doc/showcase/peit.tex`](doc/showcase/peit.tex): Academic conference paper / thesis LaTeX source.

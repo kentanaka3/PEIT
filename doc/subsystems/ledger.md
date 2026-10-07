@@ -37,7 +37,7 @@ To provide auditability, provenance, and high-performance querying, the ledger s
 1. **Authoritative JSON Lines Log (`<name>.jsonl`)**:
    - Every line represents a fully validated, self-contained `LedgerEntry` serialized as JSON.
    - The file is **append-only**. Entries are never mutated in place.
-   - Preserves complete provenance: receipt identifier (`receipt_id`), transaction date (`receipt_date`), raw description (`description`), normalized key (`item`), brand (`brand`), pack size (`pack_size`), unit price (`unit_price`), and the UTC recording timestamp (`recorded_at`).
+   - Preserves complete provenance: receipt identifier (`receipt_id`), transaction date (`receipt_date`), purchased item (`item`), optional notes (`notes`), brand (`brand`), pack size (`pack_size`), unit price (`unit_price`), and the UTC recording timestamp (`recorded_at`).
    - Serves as the ultimate source of truth for version control, backups, and data migration.
 
 2. **Automatic Sibling SQLite Projection Cache (`<name>.db`)**:
@@ -404,11 +404,11 @@ The ledger test matrix is divided into eight discrete functional suites:
 8. **Suite 8: End-to-End Command-Line Interface (`test/test_cli.py`)**:
    - Tests CLI argument parsing, `--index` calculation in table and JSON formats, `--import`, `--balance`, `--list`, `--breakdown`, `--add`, `--rebuild-cache`, error handling, and standard exit codes.
 
-Additionally, `test/test_core.py` validates underlying price index formulas (`core.py` computes an unweighted Carli price index and changing-basket expenditure index, while `dashboard.py` computes base-weighted Laspeyres index for personal MoM inflation), and receipt schema parsing.
+Additionally, `test/test_core.py` validates underlying price index formulas, `test/test_dashboard.py` verifies HTML visualizers, and `test/test_profiler.py` verifies the stochastic Profile × Market simulation engine.
 
 ### 6.2 The Scientific Test Runner (`test/run_tests.sh`)
 
-PEIT provides a standardized Bash runner script executing **142 unit and integration tests** across 10 suites:
+PEIT provides a standardized Bash runner script executing **164 unit and integration tests** across 11 suites:
 
 ```bash
 # View usage and options
@@ -417,10 +417,11 @@ bash test/run_tests.sh --help
 # List available suites and test counts
 bash test/run_tests.sh --list
 
-# Execute all 142 test cases
+# Execute all 164 test cases
 bash test/run_tests.sh --all
 
 # Execute a specific suite
+bash test/run_tests.sh --suite schema        # Canonical SSOT schema definitions & parity (22 tests)
 bash test/run_tests.sh --suite profiler      # Profile generator, market dynamics & CLI (40 tests)
 bash test/run_tests.sh --suite ledger        # Signed ledger, SQLite cache, balances & filters (26 tests)
 bash test/run_tests.sh --suite dashboard     # Multi-graph dashboard visualizer & KPI metrics (14 tests)
@@ -447,13 +448,13 @@ renders formatted colored status summaries, and preserves pytest exit codes for 
 
 ## 7. Synthetic Dataset & Profile Generation
 
-PEIT provides two simulation mechanisms: the new modular stochastic **Profile × Market simulation engine** (`src/peit/profiler/`) and the legacy procedural generator (`util/generate_dataset.py`).
+PEIT provides a modular stochastic **Profile × Market simulation engine** (`src/peit/profiler/`) to generate realistic synthetic receipt streams and benchmark datasets.
 
 ### 7.1 Profile × Market Engine (`peit.profiler`)
 
 The profiler cleanly decouples consumer behavior (Profile) from price dynamics (Market):
 
-$$\text{Profile (Consumer)} \times \text{Market (Prices)} \times \text{Seed (Randomness)} \longrightarrow \text{Receipts (CSV v2)} + \text{Ground Truth (JSON)}$$
+$$\text{Profile (Consumer)} \times \text{Market (Prices)} \times \text{Seed (Randomness)} \longrightarrow \text{Receipts (CSV)} + \text{Ground Truth (JSON)}$$
 
 - **Profile JSON (`config/profiles/`)**: Defines consumer identity, spending baskets, brand preferences, store loyalty weights, co-living scheduling policies (purchase count, deterministic periodic intervals, and Weibull renewal depletion hazard), and income sources with Gaussian volatility.
 - **Market JSON (`config/markets/`)**: Defines catalog base prices, latent Gaussian inflation drift, $(s, S)$ menu-cost sticky price bands, Calvo hazard price reviews, dual-mode charm pricing (grid step quantization + psychological endings like `.99`), and volume discount pack tiers (`pack_size` $\to$ `unit_price` multiplier).
@@ -479,22 +480,7 @@ python -m peit.profiler generate \
   --import-ledger data/Alice/ledger.jsonl
 ```
 
-### 7.2 Legacy Dataset Generator (`util/generate_dataset.py`)
-
-PEIT also preserves the legacy monolithic generator (`util/generate_dataset.py`) for existing benchmark datasets:
-
-```bash
-# 1. Canonical 10,000-row demonstration dataset (60 months, 10 categories, 3% inflation)
-python3 util/generate_dataset.py --profile default
-
-# 2. Alice persona simulation (24 months, bi-weekly salary, Aguinaldo, rent increases)
-python3 util/generate_dataset.py --profile alice --import-ledger
-
-# 3. Custom parameterized generation
-python3 util/generate_dataset.py --profile alice -o data/custom.csv --start-year 2025 --months 12 --account "personal:checking"
-```
-
-### 7.3 Available Profiles Comparison
+### 7.2 Available Profiles Comparison
 
 | Feature | `default` Profile | `alice` Profile |
 |---|---|---|
@@ -510,3 +496,44 @@ python3 util/generate_dataset.py --profile alice -o data/custom.csv --start-year
 | **Financial Transfers**| Generic inter-account movements | Monthly automatic savings allocation to CETES treasury funds (`-10000.00 MXN`) |
 | **Adjustments & Refunds**| Explicit signed discount, deposit, fee, and tax rows | Promotional coupon discounts and occasional apparel return credits (`+650.00 MXN`) |
 | **Default Output Path** | `data/example_month.csv` | `data/Alice/receipts.csv` |
+
+---
+
+## 8. Mobile Integration & Synchronization Daemon
+
+PEIT provides a local-first, privacy-preserving HTTP REST synchronization daemon (`src/peit/server.py`) allowing mobile devices (iOS / Android) and external applications to ingest and query ledger transactions over local networks.
+
+### 8.1 Daemon Operation (`peit --serve`)
+
+The server is implemented via Python's standard library `http.server.ThreadingHTTPServer` to maintain PEIT's zero-external-dependency requirement.
+
+```bash
+# Launch daemon on localhost (default: 127.0.0.1:8000)
+peit --ledger data/ledger.jsonl --serve
+
+# Expose on LAN with custom host and port
+peit --ledger data/ledger.jsonl --serve --host 0.0.0.0 --port 8080
+```
+
+### 8.2 API Specification
+
+| Endpoint | Method | Description | Request / Query | Response Format |
+|---|---|---|---|---|
+| `/api/v1/health` | `GET` | Health check and node status | None | `{"status": "ok", "version": "0.1.0", "entry_count": int, "schema_columns": 25}` |
+| `/api/v1/summary` | `GET` | Real-time balance and category metrics | `?month=YYYY-MM&account=<acc>` | `{"status": "success", "balance": {...}, "category_breakdown": {...}}` |
+| `/api/v1/entries` | `GET` | Paginated transaction listing | `?month=&category=&merchant=&limit=100&offset=0` | `{"status": "success", "count": int, "entries": [...]}` |
+| `/api/v1/sync/push` | `POST` | Batch transaction push ingestion | `{"entries": [...], "force": false, "account": "..."}` | `{"status": "success", "imported": int, "skipped": int, "entry_ids": [...]}` |
+| `/*` | `OPTIONS` | CORS preflight handler | Preflight headers | `HTTP 204` with CORS permissions |
+
+### 8.3 Concurrency, Safety, and Payload Guards
+
+- **Thread Safety**: Writes and sensitive reads are guarded by an internal re-entrant lock (`self.server.lock`), while SQLite operates in Write-Ahead Logging (`WAL`) mode with `NORMAL` synchronous pragma.
+- **Strict Schema Enforcement**: Every item in `entries` undergoes 25-column schema validation (`peit.core.validate_rows()`). Invalid items return `HTTP 400 Bad Request` with row-level diagnostics.
+- **Idempotent Ingestion**: Identical transactions pushed multiple times are detected via deterministic SHA-256 identity hashing (`compute_entry_id`) and skipped without duplication (`imported: 0, skipped: N`).
+- **DoS Guard**: Payloads exceeding 10 MB are rejected with `HTTP 413 Payload Too Large`.
+
+### 8.4 Zero-Friction LAN Discovery & Batch Chunking
+
+- **mDNS / Zeroconf Service Discovery**: The daemon advertises `_peit-sync._tcp.local.` on LAN, transmitting version (`0.1.0`) and schema (`25`) metadata. Enabled by default; toggled via `--broadcast` / `--no-broadcast`. If Zeroconf dependencies are absent, the server gracefully falls back to direct IP connections.
+- **Platform-Aware Auto-Discovery**: Mobile clients probe localhost candidates (iOS Simulator: `127.0.0.1:8000`, Android Emulator: `10.0.2.2:8000`) and LAN subnets via `GET /api/v1/health` for automatic zero-configuration pairing.
+- **Chunked Batch Processing**: Mobile sync clients batch transactions into chunks (default 100 items/request) to prevent memory exhaustion, immediately committing SQLite status after each successful batch. When a batch contains malformed records, the client cascades to single-item fallback to isolate and quarantine invalid rows while syncing healthy records.

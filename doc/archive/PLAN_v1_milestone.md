@@ -333,8 +333,7 @@ The test suite is structured into 11 comprehensive suites covering all visualize
 - [ ] `test/run_tests.sh --all` runs all suites (`core`, `ledger`, `cli`, `dashboard`) successfully.
 - [ ] Ingesting `data/example_month.csv` and generating the dashboard creates a valid tabbed HTML page with all charts functional.
 - [ ] Passing `--benchmark config/benchmark_cpi_mx.csv` displays personal vs. national CPI comparison in Tab 2.
-- [ ] Repository documentation and scaffold validation passes:
+- [ ] Repository test runner and scaffold validation passes:
   - `bash -n test/run_tests.sh`
-  - `bash -n LLM/scripts/handler.sh`
-  - `bash LLM/scripts/handler.sh validate --root "$PWD"`
+  - `bash test/run_tests.sh --all`
   - `git diff --check`

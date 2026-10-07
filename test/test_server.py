@@ -116,7 +116,7 @@ def sample_entry(
 def running_server(tmp_path: Path):
   """Spins up a test server on a free ephemeral OS port."""
   ledger_path = tmp_path / "test_ledger.jsonl"
-  server = create_server(ledger_path, host="127.0.0.1", port=0)
+  server = create_server(ledger_path, host="127.0.0.1", port=0, secure=False)
   port = server.server_address[1]
   thread = threading.Thread(target=server.serve_forever, daemon=True)
   thread.start()

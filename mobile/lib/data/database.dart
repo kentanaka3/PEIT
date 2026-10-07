@@ -203,6 +203,153 @@ class AppDatabase {
     return rs.map((row) => ReceiptEntryModel.fromSqliteMap(Map<String, dynamic>.from(row))).toList();
   }
 
+  /// Calculates total income (`event_type == 'income'`), total expenditure
+  /// (`event_type IN ('recurring', 'one_off')`), net transfers, net refunds,
+  /// and net cash balance.
+  ///
+  /// Can optionally filter by month (YYYY-MM).
+  Future<MonthlyCashFlowKpis> getMonthlyCashFlowKpis({String? month}) async {
+    final String sql;
+    final List<Object?> params;
+
+    if (month != null && month.isNotEmpty) {
+      sql = '''
+        SELECT
+          COALESCE(SUM(CASE WHEN event_type = 'income' THEN paid_total ELSE 0.0 END), 0.0) AS total_income,
+          COALESCE(SUM(CASE WHEN event_type IN ('recurring', 'one_off') THEN ABS(paid_total) ELSE 0.0 END), 0.0) AS total_expenditure,
+          COALESCE(SUM(CASE WHEN event_type = 'transfer' THEN paid_total ELSE 0.0 END), 0.0) AS net_transfers,
+          COALESCE(SUM(CASE WHEN event_type = 'refund' THEN paid_total ELSE 0.0 END), 0.0) AS net_refunds,
+          COALESCE(SUM(paid_total), 0.0) AS net_balance,
+          COUNT(*) AS transaction_count
+        FROM receipt_entries
+        WHERE receipt_date LIKE ?
+      ''';
+      params = ['$month%'];
+    } else {
+      sql = '''
+        SELECT
+          COALESCE(SUM(CASE WHEN event_type = 'income' THEN paid_total ELSE 0.0 END), 0.0) AS total_income,
+          COALESCE(SUM(CASE WHEN event_type IN ('recurring', 'one_off') THEN ABS(paid_total) ELSE 0.0 END), 0.0) AS total_expenditure,
+          COALESCE(SUM(CASE WHEN event_type = 'transfer' THEN paid_total ELSE 0.0 END), 0.0) AS net_transfers,
+          COALESCE(SUM(CASE WHEN event_type = 'refund' THEN paid_total ELSE 0.0 END), 0.0) AS net_refunds,
+          COALESCE(SUM(paid_total), 0.0) AS net_balance,
+          COUNT(*) AS transaction_count
+        FROM receipt_entries
+      ''';
+      params = [];
+    }
+
+    final rs = _db.select(sql, params);
+    if (rs.isEmpty) {
+      return const MonthlyCashFlowKpis(
+        totalIncome: 0.0,
+        totalExpenditure: 0.0,
+        netTransfers: 0.0,
+        netRefunds: 0.0,
+        netBalance: 0.0,
+        transactionCount: 0,
+      );
+    }
+
+    final row = rs.first;
+    return MonthlyCashFlowKpis(
+      totalIncome: (row['total_income'] as num).toDouble(),
+      totalExpenditure: (row['total_expenditure'] as num).toDouble(),
+      netTransfers: (row['net_transfers'] as num).toDouble(),
+      netRefunds: (row['net_refunds'] as num).toDouble(),
+      netBalance: (row['net_balance'] as num).toDouble(),
+      transactionCount: row['transaction_count'] as int,
+    );
+  }
+
+  /// Groups by `category`, calculating total spent (`SUM(ABS(paid_total))`)
+  /// and item count for consumption transactions (`event_type IN ('recurring', 'one_off')`).
+  ///
+  /// Returns typed list of `CategoryExpenditure` sorted by expenditure descending.
+  /// Reconciles percentage shares so that the sum matches 100.0%.
+  Future<List<CategoryExpenditure>> getCategoryBreakdown({String? month}) async {
+    final String sql;
+    final List<Object?> params;
+
+    if (month != null && month.isNotEmpty) {
+      sql = '''
+        SELECT
+          category,
+          COALESCE(SUM(ABS(paid_total)), 0.0) AS total_spent,
+          COUNT(*) AS item_count
+        FROM receipt_entries
+        WHERE event_type IN ('recurring', 'one_off') AND receipt_date LIKE ?
+        GROUP BY category
+        ORDER BY total_spent DESC
+      ''';
+      params = ['$month%'];
+    } else {
+      sql = '''
+        SELECT
+          category,
+          COALESCE(SUM(ABS(paid_total)), 0.0) AS total_spent,
+          COUNT(*) AS item_count
+        FROM receipt_entries
+        WHERE event_type IN ('recurring', 'one_off')
+        GROUP BY category
+        ORDER BY total_spent DESC
+      ''';
+      params = [];
+    }
+
+    final rs = _db.select(sql, params);
+    if (rs.isEmpty) return [];
+
+    double totalExp = 0.0;
+    final rawList = <CategoryExpenditure>[];
+
+    for (final row in rs) {
+      final spent = (row['total_spent'] as num).toDouble();
+      totalExp += spent;
+      rawList.add(CategoryExpenditure(
+        category: (row['category'] as String?)?.trim().isNotEmpty == true
+            ? (row['category'] as String).trim()
+            : 'General',
+        totalSpent: spent,
+        itemCount: row['item_count'] as int,
+        percentage: 0.0,
+      ));
+    }
+
+    final result = <CategoryExpenditure>[];
+    for (final item in rawList) {
+      final pct = totalExp > 0 ? (item.totalSpent / totalExp) * 100.0 : 0.0;
+      result.add(item.copyWith(
+        percentage: double.parse(pct.toStringAsFixed(2)),
+      ));
+    }
+
+    // Reconcile percentage rounding discrepancy up to 0.1%
+    if (result.isNotEmpty && totalExp > 0) {
+      final sumPct = result.fold<double>(0.0, (acc, item) => acc + item.percentage);
+      final diff = double.parse((100.0 - sumPct).toStringAsFixed(2));
+      if (diff.abs() > 0.0 && diff.abs() < 0.15) {
+        result[0] = result[0].copyWith(
+          percentage: double.parse((result[0].percentage + diff).toStringAsFixed(2)),
+        );
+      }
+    }
+
+    return result;
+  }
+
+  /// Returns sorted unique months (`YYYY-MM`) present in `receipt_entries`.
+  Future<List<String>> getHistoricalMonths() async {
+    final rs = _db.select('''
+      SELECT DISTINCT SUBSTR(receipt_date, 1, 7) AS month
+      FROM receipt_entries
+      WHERE receipt_date IS NOT NULL AND LENGTH(receipt_date) >= 7
+      ORDER BY month ASC
+    ''');
+
+    return rs.map((row) => row['month'] as String).toList();
+  }
+
   /// Retrieve count of pending unsynced entries.
   int getPendingCount() {
     final rs = _db.select('SELECT COUNT(*) as cnt FROM receipt_entries WHERE is_synced = 0');
@@ -226,4 +373,60 @@ class AppDatabase {
   void close() {
     _db.dispose();
   }
+}
+
+/// Typed data class representing monthly cash flow KPIs.
+class MonthlyCashFlowKpis {
+  final double totalIncome;
+  final double totalExpenditure;
+  final double netTransfers;
+  final double netRefunds;
+  final double netBalance;
+  final int transactionCount;
+
+  const MonthlyCashFlowKpis({
+    required this.totalIncome,
+    required this.totalExpenditure,
+    required this.netTransfers,
+    required this.netRefunds,
+    required this.netBalance,
+    required this.transactionCount,
+  });
+
+  @override
+  String toString() =>
+      'MonthlyCashFlowKpis(income: $totalIncome, exp: $totalExpenditure, net: $netBalance, count: $transactionCount)';
+}
+
+/// Typed data class representing category expenditure aggregates.
+class CategoryExpenditure {
+  final String category;
+  final double totalSpent;
+  final int itemCount;
+  final double percentage;
+
+  const CategoryExpenditure({
+    required this.category,
+    required this.totalSpent,
+    required this.itemCount,
+    this.percentage = 0.0,
+  });
+
+  CategoryExpenditure copyWith({
+    String? category,
+    double? totalSpent,
+    int itemCount = 0,
+    double? percentage,
+  }) {
+    return CategoryExpenditure(
+      category: category ?? this.category,
+      totalSpent: totalSpent ?? this.totalSpent,
+      itemCount: itemCount != 0 ? itemCount : this.itemCount,
+      percentage: percentage ?? this.percentage,
+    );
+  }
+
+  @override
+  String toString() =>
+      'CategoryExpenditure(cat: $category, spent: $totalSpent, pct: $percentage%, items: $itemCount)';
 }

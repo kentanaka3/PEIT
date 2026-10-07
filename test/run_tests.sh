@@ -3,8 +3,8 @@
 # PEIT Test Runner (test/run_tests.sh)
 #
 # Production-grade, reproducible test runner for the PEIT test suites.
-# Executes 11 test suites (schema, core, ledger, cli, dashboard, profiler,
-# server, mobile sync, ocr parser, ocr canvas, ocr benchmark) with clean
+# Executes 12 test suites (schema, core, ledger, cli, dashboard, profiler,
+# server, mobile sync, ocr parser, ocr canvas, ocr benchmark, security) with clean
 # reporting, timing, and exit codes.
 # =============================================================================
 
@@ -49,7 +49,7 @@ log_error() { # 3
 }
 
 # Print usage instructions and available test suite options.
-usage() { # 40
+usage() { # 41
     cat <<EOF
 ${C_BOLD}NAME${C_RESET}
     ${SCRIPT} - PEIT test automation and test suite runner
@@ -62,7 +62,7 @@ ${C_BOLD}DESCRIPTION${C_RESET}
     Automatically configures PYTHONPATH and reports execution timing.
 
 ${C_BOLD}SUITES${C_RESET}
-    all           Run all test suites (schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark) [default]
+    all           Run all test suites (schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security) [default]
     schema        Run canonical SSOT schema and contract tests (test/test_schema.py)
     core          Run core price index and schema tests (test/test_core.py)
     ledger        Run ledger, cache, and financial balance tests (test/test_ledger.py)
@@ -74,10 +74,11 @@ ${C_BOLD}SUITES${C_RESET}
     ocr           Run OCR and bilingual receipt parser prototype tests (test/test_ocr.py)
     ocr_canvas    Run synthetic receipt image generator & distortion tests (test/test_ocr_canvas.py)
     ocr_benchmark Run real photo benchmark suite & econometric evaluation tests (test/test_ocr_benchmark.py)
+    security      Run LAN pairing security handshake & auth tests (test/test_security_handshake.py)
 
 ${C_BOLD}OPTIONS${C_RESET}
     -a, --all               Run all test suites.
-    -s, --suite <name>      Run a specific suite: schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, or all.
+    -s, --suite <name>      Run a specific suite: schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security, or all.
     -k, --keyword <pattern> Run tests matching the given keyword expression.
     -v, --verbose           Run pytest with verbose output (-vv).
     -q, --quiet             Run pytest with minimal output (-q).
@@ -115,8 +116,8 @@ list_test_suites() { # 34
     printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "SUITE" "FILE" "TEST CASES" "DESCRIPTION"
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
 
-    local -r suites=("schema" "core" "ledger" "cli" "dashboard" "profiler" "server" "mobile" "ocr" "ocr_canvas" "ocr_benchmark")
-    local -r files=("test/test_schema.py" "test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py" "test/test_ocr.py" "test/test_ocr_canvas.py" "test/test_ocr_benchmark.py")
+    local -r suites=("schema" "core" "ledger" "cli" "dashboard" "profiler" "server" "mobile" "ocr" "ocr_canvas" "ocr_benchmark" "security")
+    local -r files=("test/test_schema.py" "test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py" "test/test_ocr.py" "test/test_ocr_canvas.py" "test/test_ocr_benchmark.py" "test/test_security_handshake.py")
     local -r descs=(
         "Canonical SSOT schema definitions, column sequences & hashes"
         "Core receipt schema validation & index algorithms"
@@ -129,6 +130,7 @@ list_test_suites() { # 34
         "OCR spatial clustering, bilingual parsing & balance checks"
         "Synthetic receipt image generator & distortion pipeline"
         "Real photo benchmark suite & econometric evaluation"
+        "LAN pairing security handshake, auth registry & TLS pinning"
     )
 
     local total_tests=0
@@ -148,15 +150,15 @@ list_test_suites() { # 34
     done
 
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
-    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "11 files" "$total_tests" "Full test suite coverage"
+    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "12 files" "$total_tests" "Full test suite coverage"
 }
 
 # Map a suite name to its corresponding test file path.
-resolve_suite_targets() { # 42
+resolve_suite_targets() { # 45
     local -r suite_name="$1"
     case "$suite_name" in
         all)
-            echo "test/test_schema.py test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py test/test_ocr.py test/test_ocr_canvas.py test/test_ocr_benchmark.py"
+            echo "test/test_schema.py test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py test/test_ocr.py test/test_ocr_canvas.py test/test_ocr_benchmark.py test/test_security_handshake.py"
             ;;
         schema)
             echo "test/test_schema.py"
@@ -191,8 +193,11 @@ resolve_suite_targets() { # 42
         ocr_benchmark)
             echo "test/test_ocr_benchmark.py"
             ;;
+        security)
+            echo "test/test_security_handshake.py"
+            ;;
         *)
-            log_error "Unknown test suite: '${suite_name}'. Allowed: all, schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark."
+            log_error "Unknown test suite: '${suite_name}'. Allowed: all, schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security."
             return 1
             ;;
     esac

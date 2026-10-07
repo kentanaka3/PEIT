@@ -35,13 +35,17 @@ shapes.misc, calc, fit, backgrounds, matrix, shadows}
 \newacro{HICP}{Harmonized Indices of Consumer Prices}
 \newacro{IEP}{Individual Expenditure Patterns}
 \newacro{PEIT}{Personal Economic Inflation Tracker}
+\newacro{JSONL}{JavaScript Object Notation Lines}
+\newacro{PPC}{Percentage Point Contribution}
+\newacro{ADI}{Additive Dollar Impact}
+\newacro{COICOP}{Classification of Individual Consumption According to Purpose}
 
 \title{PEIT: Personal Economic Inflation Tracker\\
 \large Decentralizing Economic Truth Through Crowdsourced Purchase Analytics}
 \author{Ken Tanaka Hernández\\
   \small HAIKU, Guadalajara, Mexico\\
 \small \href{mailto:kentanaka3@outlook.com}{kentanaka3@outlook.com}}
-\date{August 31, 2026}
+\date{September 2026}
 
 \begin{document}
 \maketitle
@@ -282,8 +286,19 @@ A live sequence is:
 Representative Unix commands for the current demonstrator are:
 
 \begin{verbatim}
-PYTHONPATH=src python -m peit.cli config/receipt_schema.csv --json
-PYTHONPATH=src python -m peit.cli config/receipt_schema.csv --audit /tmp/peit-audit.jsonl
+# 1. Generate 12-month synthetic receipt stream under Schema with seed reproducibility:
+python3 -m peit.profiler generate --profile config/profiles/alice.json \
+  --market config/markets/mexico_2024.json --seed 42 -o data/Alice/receipts.csv
+
+# 2. Ingest and validate Schema receipts into the authoritative JSONL and SQLite ledger:
+PYTHONPATH=src python3 -m peit.cli --ledger data/Alice/ledger.jsonl --import data/Alice/receipts.csv
+
+# 3. Query high-level financial balances and spending distributions by category:
+PYTHONPATH=src python3 -m peit.cli --ledger data/Alice/ledger.jsonl --balance
+PYTHONPATH=src python3 -m peit.cli --ledger data/Alice/ledger.jsonl --breakdown
+
+# 4. Generate multi-graph interactive HTML5 dashboard with Bennett decomposition:
+PYTHONPATH=src python3 -m peit.cli --ledger data/Alice/ledger.jsonl --html doc/showcase/dashboard.html
 \end{verbatim}
 
 The exhibition package should include a short screen recording, a synthetic

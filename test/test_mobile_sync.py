@@ -50,7 +50,7 @@ def make_http_get(url: str) -> tuple[int, dict[str, Any]]:
 def running_server(tmp_path: Path):
   """Spins up a test server on a free ephemeral port."""
   ledger_path = tmp_path / "mobile_sync_ledger.jsonl"
-  server = create_server(ledger_path, host="127.0.0.1", port=0)
+  server = create_server(ledger_path, host="127.0.0.1", port=0, secure=False)
   port = server.server_address[1]
   thread = threading.Thread(target=server.serve_forever, daemon=True)
   thread.start()

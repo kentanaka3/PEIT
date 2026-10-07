@@ -2,7 +2,7 @@
 
 ## Problem
 
-[generate_dataset.py](util/generate_dataset.py) is a 1,873-line monolith where:
+The former procedural generator was a 1,873-line monolith where:
 
 - Consumer behavior and market dynamics are interleaved in procedural code
 - Prices are deterministic (`math.sin` noise) — not stochastic
@@ -87,7 +87,8 @@ graph LR
 | 21 | `brand_rating` | float | Brand satisfaction rating (`1.0` to `5.0`) |
 | 22 | `product_tier` | str | Product quality tier (`A` to `E`) |
 | 23 | `product_rating` | float | Product satisfaction rating (`1.0` to `5.0`) |
-| 24 | `notes` | str | Free-text annotation |
+| 24 | `availability` | str | Item stock status (`in_stock`, `low_stock`, `out_of_stock`, `discontinued`) |
+| 25 | `notes` | str | Free-text annotation |
 
 Key characteristics:
 - `month` is derived from `receipt_date`.
@@ -204,6 +205,17 @@ class PackTierPriceCurve:
     unit_price_multiplier: float  # e.g., 0.92 for 8% volume discount
 
 @dataclass
+class CharmPricing:
+    """Dual-mode charm pricing: quantization grid AND psychological endings.
+
+    Quantization mode: round to nearest `grid_step` (e.g., 0.50 → prices land on $X.00 or $X.50).
+    Psychological mode: snap to charm endings (e.g., .99, .49, .95) after quantization.
+    Both modes can be active simultaneously.
+    """
+    grid_step: float = 0.50              # Quantize to this increment (e.g., 0.50)
+    psychological_endings: list[int] | None = None  # Charm cent endings (e.g., [99, 49, 95])
+
+@dataclass
 class CatalogItem:
     item: str               # must match BasketItem.item
     base_price: float       # base unit price at pack_size=1
@@ -212,8 +224,8 @@ class CatalogItem:
     # Sticky price & menu cost parameters
     menu_cost_band: float = 0.05    # (s, S) threshold: stay locked if deviation < 5%
     calvo_jump_prob: float = 0.20   # Hazard probability to force price review
-    charm_increment: float = 0.50   # Quantize to psychological step (e.g. 0.50)
-    pack_tiers: list[PriceCurve] | None = None
+    charm: CharmPricing | None = None  # Dual-mode charm pricing (quantization + psychological)
+    pack_tiers: list[PackTierPriceCurve] | None = None
     seasonal_modifiers: dict[int, float] | None = None  # month → multiplier
 
 @dataclass
@@ -229,10 +241,16 @@ class Market:
     def price_at(self, item: str, merchant: str, month_offset: int, pack_size: int,
                  rng: random.Random, current_shelf_price: float | None = None) -> float:
         """
-        Compute sticky regime-jump price for an item at a given month.
-        Evaluates latent drift P* = P0 * (1+inf)^(t/12) * exp(ε),
-        applies (s, S) menu cost filter against current_shelf_price,
-        and quantizes to charm increment.
+        Compute sticky regime-jump price for an item at a specific merchant.
+
+        Shelf prices are tracked **per (item, merchant)** — the same item can
+        have different shelf prices at different stores.
+
+        Algorithm:
+          1. Compute latent drift P* = P0 * (1+inf)^(t/12) * exp(ε)
+          2. Apply (s, S) menu cost filter against current_shelf_price
+          3. Apply charm pricing: quantize to grid_step, then snap to
+             nearest psychological ending if configured
         """
         ...
 ```
@@ -260,13 +278,14 @@ def generate(
     rng = random.Random(seed)
     rows = []
     
-    # Track persistent market shelf prices and hazard elapsed time state
-    shelf_prices: dict[str, float] = {}
+    # Track persistent market shelf prices per (item, merchant) and hazard elapsed time state
+    shelf_prices: dict[tuple[str, str], float] = {}  # (item, merchant) → current shelf price
     last_purchased_month: dict[str, int] = {item.item: -999 for item in profile.basket}
 
     # 1. Inject deterministic scenarios (if any)
     # 2. For each month:
-    #    a. Generate income rows (deterministic schedule from profile)
+    #    a. Generate income rows (deterministic schedule from profile,
+    #       with Gaussian noise: amount * (1 + gauss(0, volatility)))
     #    b. For each basket item:
     #       - Evaluate scheduling:
     #           * count: emit N independent occurrences
@@ -350,6 +369,22 @@ Minimal example market definitions.
 > Market dynamics use latent Gaussian shocks combined with an $(s, S)$ menu-cost threshold filter, Calvo hazard jumps, and charm rounding to produce realistic sticky prices.
 
 > [!IMPORTANT]
+> **Per-Store Shelf Prices:**
+> Shelf prices are tracked per `(item, merchant)` pair. The same item can have different shelf prices at different stores, reflecting real market heterogeneity. The generator maintains a `dict[tuple[str, str], float]` state across months.
+
+> [!IMPORTANT]
+> **Dual-Mode Charm Pricing:**
+> `CharmPricing` implements both quantization (`grid_step` rounding, e.g., $0.50 increments) and psychological charm endings (e.g., .99, .49, .95). Both can be active simultaneously: first quantize to grid, then snap to nearest charm ending.
+
+> [!IMPORTANT]
+> **Rich Description Templates:**
+> `BasketItem` includes `product` (human-readable name) and `variant` (sub-type) fields. The `description_template` interpolates `{product}`, `{brand}`, `{variant}`, `{pack_size}`, `{unit}` to generate realistic raw item text. Default template: `"{product} {brand} {variant} {pack_size}{unit}"`.
+
+> [!IMPORTANT]
+> **Income Volatility:**
+> `IncomeSource` supports an extremely low `volatility` parameter (default `0.0`). Salary uses near-zero σ (e.g., `0.005`), while variable income like tips or commissions uses higher σ (e.g., `0.10`). Applied as `amount * (1 + gauss(0, volatility))`.
+
+> [!IMPORTANT]
 > **Ground Truth Manifest:**
 > `ground_truth.json` exports a complete configuration and seed snapshot ensuring 100% deterministic simulation reproducibility.
 
@@ -360,14 +395,17 @@ Minimal example market definitions.
 ### Phase 1: Profiler Implementation & TDD
 1. **Tests first:** Write `test/test_profiler.py` with tests for:
    - Profile dataclass construction and JSON round-trip
-   - Co-living scheduling (count, deterministic interval, hazard/renewal)
+   - BasketItem with product, variant, and description template rendering
+   - Co-living scheduling (count, deterministic interval, hazard/renewal with illustrative defaults)
    - Market dataclass construction and sticky `price_at()` behavior
-   - Discrete pack tiers and volume discounting
-   - Generator output Schema v2 validation
+   - Per-(item, merchant) shelf price tracking
+   - Dual-mode charm pricing (grid quantization + psychological endings)
+   - `PackTierPriceCurve` volume discounting
+    - Generator output Schema validation
    - Generator determinism with seed
    - Generator stochasticity without seed
    - Weighted store and brand preference selection
-   - Rich template description rendering
+   - Income generation with volatility noise
    - Scenario injection
    - Ground truth configuration & seed manifest emission
 2. **Implement dataclasses:** `profile.py`, `market.py`
@@ -377,7 +415,7 @@ Minimal example market definitions.
 6. **Verify all profiler tests pass**
 
 ### Phase 2: Core & Ledger Schema Migration
-1. Update `config/receipt_schema.csv` to 24-column Schema.
+1. Update `config/receipt_schema.csv` to 25-column Schema (including `availability`).
 2. Update `src/peit/core.py` validation and schema constants.
 3. Update `src/peit/ledger.py` (`LedgerEntry`, `compute_entry_id`, SQLite table schema, and CSV ingestion).
 4. Update tests (`test/test_core.py`, `test/test_ledger.py`, `test/test_cli.py`, `test/test_dashboard.py`).
@@ -401,8 +439,11 @@ python -m pytest test/ -v
   - Verify distinct `receipt_date` and `receipt_id` sequences.
   - Verify convergence to expected basket composition and brand shares.
 - Verify sticky price dynamics: shelf prices remain constant across small noise fluctuations and jump in discrete steps when the menu cost threshold is crossed.
+- Verify per-store pricing: the same item at different merchants can hold different shelf prices.
+- Verify dual charm pricing: prices after charm rounding land on grid increments AND/OR psychological endings.
+- Verify income volatility: salary rows cluster tightly around base amount (σ ≈ 0.005), variable income shows wider spread.
 
 ### Manual Verification
-- Inspect generated CSV for exact 24-column Schema alignment.
+- Inspect generated CSV for exact 25-column Schema alignment.
 - Verify `ground_truth.json` enables exact re-generation of identical data.
 - Verify description text is rendered from template with correct product/brand/variant interpolation.

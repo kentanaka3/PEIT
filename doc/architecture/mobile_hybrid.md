@@ -118,7 +118,7 @@ Once the receipt balances and the user confirms:
 
 To ensure maximum econometric reliability before assembling Flutter screens, Phase 4 follows a structured **Prototype-First Engineering Workflow**:
 
-### 6.1 Milestone 4A: Standalone Python OCR & Heuristic Parser Prototype (`src/peit/ocr/`)
+### 6.1 Milestone 4A: Standalone Python OCR & Heuristic Parser Prototype (`src/peit/ocr/`) [COMPLETED]
 - **Bilingual & International Parser Engine**:
   - Generalized heuristic parser supporting **MXN, USD, and EUR** currencies.
   - Multi-lingual date recognition (ISO `YYYY-MM-DD`, `DD/MM/YYYY`, `MM/DD/YYYY`, and Spanish/English text months).
@@ -130,21 +130,32 @@ To ensure maximum econometric reliability before assembling Flutter screens, Pha
   - Enforces that all items extracted from a single scan strictly share identical `receipt_id`, `receipt_date`, `merchant`, and `currency`.
   - Strict total price sum check: $\sum \text{items} - \text{discount} + \text{tax} + \text{fee} + \text{deposit} = |\text{paid\_total}|$.
 
-### 6.2 Milestone 4B: Synthetic Receipt Generator (`src/peit/profiler/receipt_image.py` or `util/receipt_canvas.py`)
-- Programmatically generates realistic, multi-lingual receipt image bitmaps (.png) from synthetic `Profile × Market` datasets:
-  - Thermal receipt text rendering (monospace, variable font weights, store logos).
-  - Distortion simulations: slight rotation tilt ($\pm 3^\circ$), paper wrinkles, faint thermal print fading, character noise.
-  - Generates ground-truth JSON manifests with exact pixel bounding boxes and text content for 100% deterministic OCR evaluation.
+### 6.2 Milestone 4B: Synthetic Receipt Canvas & Distortion Simulator (`src/peit/ocr/canvas.py`) [COMPLETED]
+- Programmatically generates realistic, multi-lingual thermal receipt image bitmaps (`PIL.Image.Image`) from PEIT structured receipts:
+  - Thermal receipt layout standards (store headers, two-column line items, dashed dividers, balanced footers).
+  - Tracks exact pixel boundaries and normalized bounding boxes $[0.0, 1.0]$ for all words and lines.
+  - Distortion simulator `apply_distortions`: affine rotation ($\pm 3^\circ$), thermal head contrast fading, radial perspective vignetting, and grain noise.
+  - Integrated CLI command `python -m peit.profiler generate-image -o receipt.png --manifest manifest.json`.
+  - Verified with 100% round-trip fidelity against `ReceiptParser` in `test/test_ocr_canvas.py`.
 
-### 6.3 Milestone 4C: Real Receipt Photo Benchmark Suite (`test/data/receipts/`)
-- Curated repository bundle of anonymized real-world receipt photos:
-  - Supermarket paper slips (OXXO, Walmart, Costco, Soriana, Trader Joe's).
-  - Printed invoices and digital PDF screenshots.
-  - Accompanied by human-verified 25-column expected CSV ground truth.
-- Benchmark test suite `test/test_ocr.py` asserting precision and recall on dates, merchants, line items, and mathematical balance.
+### 6.3 Milestone 4C: Real Receipt Photo Benchmark Suite (`src/peit/ocr/benchmark.py`) [COMPLETED]
+- Curated repository bundle of anonymized real-world smartphone receipt photos in `test/data/receipts/` (`20261006_221633.jpg` through `20261006_221920.jpg`) paired with strict ground truth JSON manifests (`*_truth.json`).
+- Quantitative evaluation metrics:
+  - Character Error Rate (CER) and Word Error Rate (WER) via dynamic programming Levenshtein distance.
+  - Bipartite Line Item Matching (name similarity $\ge 0.80$ and $|\Delta_{\text{price}}| \le \$0.02$) yielding Precision, Recall, and $F_1$.
+  - Double-Entry Mathematical Balance Rate (MBR) verifying arithmetic closure within $\$0.01$.
+  - EXIF orientation auto-transposition (`ImageOps.exif_transpose`) resolving portrait sensor orientation (`Orientation = 6`).
+- Benchmark outcome on real supermarket captures: CER = 5.41%, WER = 5.71%, Line Item $F_1$ = **81.70%**, MBR = 50.00%.
 
-### 6.4 Milestone 4D: Flutter Mobile Client Integration (`mobile/lib/`)
-- Port validated heuristic algorithms and regex rules directly to Dart (`mobile/lib/ocr/receipt_parser.dart`).
-- Integrate `google_mlkit_text_recognition` and `SnippetCropperService`.
-- Implement `ReceiptCardStreamScreen` and `ReceiptDataGridScreen` with the shared `ReceiptReviewController`.
+### 6.4 Milestone 4D: Flutter Mobile Client Integration (`mobile/lib/`) [COMPLETED]
+- Integrated `google_mlkit_text_recognition: ^0.13.0` and `image: ^4.3.0` in `mobile/pubspec.yaml`.
+- Ported OCR models and 25-column schema serializers to Dart (`mobile/lib/ocr/models.dart`).
+- Ported bilingual heuristic parsing algorithm (`mobile/lib/ocr/parser.dart`) with 100% parity with Python parser (spatial baseline clustering, trailing price association, quantity expressions, and balance checks).
+- Wrapped ML Kit Latin recognition engine in `mobile/lib/ocr/mlkit_service.dart`.
+- Built background Dart isolate snippet cropper (`mobile/lib/ocr/snippet_cropper.dart`) using `compute` to slice normalized bounding boxes with 15% descender padding off the UI thread.
+- Implemented reactive `ReceiptReviewController` (`mobile/lib/controllers/receipt_review_controller.dart`) with triage state, bulk approve $>95\%$, auto-reconciliation, and atomic Drift SQLite transactions.
+- Implemented **Mode 1: Card Stream** (`mobile/lib/screens/receipt_card_stream_screen.dart`) with swipe gestures, visual snippets, and sticky balance verification HUD.
+- Implemented **Mode 2: Financial Data Grid** (`mobile/lib/screens/receipt_data_grid_screen.dart`) with high-density tabular layout and split inspector sheet.
+- Added live mode switching (`Icons.view_agenda` $\leftrightarrow$ `Icons.table_chart`) and camera/scan trigger in `mobile/lib/screens/home_screen.dart`.
+- Validated via automated unit and integration tests in `mobile/test/model_test.dart`, `mobile/test/ocr_parser_test.dart`, and `mobile/test/review_controller_test.dart`.
 
