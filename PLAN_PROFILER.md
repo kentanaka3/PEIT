@@ -60,34 +60,39 @@ graph LR
 ### New CSV Schema
 
 > [!IMPORTANT]
-> This is a **new schema** — not backward-compatible with the existing HEADERS. The old `generate_dataset.py` remains untouched.
+> The receipt Schema is strict: input rows must provide all current columns.
 
 | # | Column | Type | Description |
 |---|--------|------|-------------|
 | 1 | `receipt_id` | str | Unique receipt identifier |
 | 2 | `receipt_date` | date | `YYYY-MM-DD`, randomized within the month |
 | 3 | `merchant` | str | Store name (drawn from profile store preferences) |
-| 4 | `description` | str | Raw item text (replaces `item_raw`) |
-| 5 | `item` | str | Normalized item key (replaces `item_normalized`) |
-| 6 | `brand` | str | **NEW** — Manufacturer/brand (drawn from profile brand preferences) |
-| 7 | `category` | str | Expenditure category |
-| 8 | `quantity` | int | Number of packs purchased |
-| 9 | `pack_size` | int/str | **NEW** — Units per pack (e.g., `1`, `6`, `12`) |
-| 10 | `unit` | str | Unit of measure |
-| 11 | `unit_price` | decimal | Price per unit within pack (renamed from `shelf_unit_price`) |
-| 12 | `currency` | str | ISO currency code |
-| 13 | `discount` | decimal | Promotional discount (positive = money saved) |
-| 14 | `fee` | decimal | Service fees (negative = charged) |
-| 15 | `tax` | decimal | Tax amount (negative = charged) |
-| 16 | `deposit` | decimal | Deposits (negative = charged, positive = returned) |
-| 17 | `paid_total` | decimal | Net amount (negative = expenditure, positive = income/refund) |
-| 18 | `event_type` | str | `recurring`, `one_off`, `income`, `transfer`, `refund` |
-| 19 | `notes` | str | Free-text annotation |
+| 4 | `item` | str | Normalized item key |
+| 5 | `brand` | str | Manufacturer/brand (drawn from profile brand preferences) |
+| 6 | `category` | str | Expenditure category |
+| 7 | `quantity` | int | Number of packs purchased |
+| 8 | `pack_size` | int/str | Units per pack (e.g., `1`, `6`, `12`) |
+| 9 | `unit` | str | Unit of measure |
+| 10 | `unit_price` | decimal | Price per unit within pack |
+| 11 | `currency` | str | ISO currency code |
+| 12 | `discount` | decimal | Promotional discount (positive = money saved) |
+| 13 | `fee` | decimal | Service fees (negative = charged) |
+| 14 | `tax` | decimal | Tax amount (negative = charged) |
+| 15 | `deposit` | decimal | Deposits (negative = charged, positive = returned) |
+| 16 | `paid_total` | decimal | Net amount (negative = expenditure, positive = income/refund) |
+| 17 | `event_type` | str | `recurring`, `one_off`, `income`, `transfer`, `refund` |
+| 18 | `store_tier` | str | Store quality tier (`A` to `E`) |
+| 19 | `store_rating` | float | Store satisfaction rating (`1.0` to `5.0`) |
+| 20 | `brand_tier` | str | Brand quality tier (`A` to `E`) |
+| 21 | `brand_rating` | float | Brand satisfaction rating (`1.0` to `5.0`) |
+| 22 | `product_tier` | str | Product quality tier (`A` to `E`) |
+| 23 | `product_rating` | float | Product satisfaction rating (`1.0` to `5.0`) |
+| 24 | `notes` | str | Free-text annotation |
 
-Key changes from current schema:
-- **Dropped**: `month` (derivable from `receipt_date`), `source_file` (moved to ground truth manifest)
-- **Added**: `brand`, `pack_size`
-- **Renamed**: `item_raw` → `description`, `item_normalized` → `item`, `shelf_unit_price` → `unit_price`
+Key characteristics:
+- `month` is derived from `receipt_date`.
+- `brand` and `pack_size` are explicit fields.
+- Normalized item keys and unit prices have dedicated fields.
 
 ---
 
@@ -129,6 +134,7 @@ class SchedulePolicy:
 @dataclass
 class BasketItem:
     item: str               # normalized key ("milk 1 l")
+    product: str            # human-readable product name ("Leche Entera")
     category: str
     unit: str
     scheduling: SchedulePolicy
@@ -136,8 +142,9 @@ class BasketItem:
     pack_size: int           # units per pack (default 1)
     store_preferences: list[StorePreference]
     brand_preferences: list[BrandPreference]
+    variant: str = ""       # product variant ("Pasteurizada", "Deslactosada", "")
     # Rich template supporting {product}, {brand}, {variant}, {pack_size}, {unit}
-    description_template: str
+    description_template: str = "{product} {brand} {variant} {pack_size}{unit}"
     description_casing: Literal["natural", "upper", "abbr"] = "natural"
 
 @dataclass
@@ -150,6 +157,7 @@ class IncomeSource:
     frequency: str          # "biweekly", "monthly", "annual"
     schedule: list[int]     # day-of-month list (e.g., [15, 28])
     event_type: str         # "income"
+    volatility: float = 0.0  # extremely low σ for Gaussian noise (e.g., 0.005 for salary, 0.10 for tips)
 
 @dataclass
 class FinancialBehavior:
@@ -190,7 +198,7 @@ class Profile:
 
 ```python
 @dataclass
-class PriceCurve:
+class PackTierPriceCurve:
     """Discrete pack tier: pack_size → unit_price multiplier."""
     pack_size: int
     unit_price_multiplier: float  # e.g., 0.92 for 8% volume discount
@@ -218,7 +226,7 @@ class Market:
     @classmethod
     def from_json(cls, path: Path) -> "Market": ...
 
-    def price_at(self, item: str, month_offset: int, pack_size: int,
+    def price_at(self, item: str, merchant: str, month_offset: int, pack_size: int,
                  rng: random.Random, current_shelf_price: float | None = None) -> float:
         """
         Compute sticky regime-jump price for an item at a given month.
@@ -267,7 +275,8 @@ def generate(
     #       - For each occurrence:
     #           * Draw merchant from store_preferences (weighted random)
     #           * Draw brand from brand_preferences (weighted random)
-    #           * Compute price via market.price_at() with (s, S) menu cost filter
+    #           * Compute price via market.price_at(item, merchant, ...) with
+    #             per-(item, merchant) shelf price tracking and (s, S) menu cost filter
     #           * Draw independent receipt_date within month (uniform random)
     #           * Generate unique receipt_id for independent transaction
     #           * Render description from rich template ({product}, {brand}, {variant}, {pack_size}, {unit})
@@ -318,12 +327,12 @@ Minimal example market definitions.
 ## Decisions & Design Consensus
 
 > [!IMPORTANT]
-> **New schema is not backward-compatible.** The existing `generate_dataset.py` and `peit.ledger.import_csv` pipeline remain untouched. The new profiler produces a different CSV format. A migration adapter for `import_csv` is a future task.
+> **Schema migration:** Existing datasets must conform to the current receipt columns before import.
 
 > [!IMPORTANT]
-> **Full System-Wide Schema v2 Migration (Two-Phase Execution):**
-> - **Phase 1 (Profiler First):** Implement and verify `src/peit/profiler/` with unit tests and Schema v2 output.
-> - **Phase 2 (Core & Ledger Migration):** Migrate `config/receipt_schema.csv`, `src/peit/core.py`, and `src/peit/ledger.py` to natively support Schema v2, updating ledger tests and test fixtures.
+> **Full System-Wide Schema Migration (Two-Phase Execution):**
+> - **Phase 1 (Profiler First):** Implement and verify `src/peit/profiler/` with unit tests and Schema output.
+> - **Phase 2 (Core & Ledger Migration):** Migrate `config/receipt_schema.csv`, `src/peit/core.py`, and `src/peit/ledger.py` to natively support Schema, updating ledger tests and test fixtures.
 
 > [!IMPORTANT]
 > **Independent Item Purchases:**
@@ -334,7 +343,7 @@ Minimal example market definitions.
 
 > [!IMPORTANT]
 > **Co-Living Scheduling:**
-> `SchedulePolicy` natively supports deterministic intervals (e.g. quarterly, specific calendar months) and renewal/hazard processes (wear-and-tear depletion with Weibull hazard).
+> `SchedulePolicy` natively supports deterministic intervals (e.g. quarterly, specific calendar months) and renewal/hazard processes (wear-and-tear depletion with Weibull hazard). Hazard parameters (`expected_interval_months`, `hazard_shape`, `min_gap_months`, `max_gap_months`) are **illustrative defaults** — each `BasketItem` overrides them in JSON.
 
 > [!IMPORTANT]
 > **Sticky Price Regime Jumps from Gaussian Noise:**
@@ -367,8 +376,8 @@ Minimal example market definitions.
 5. **Write example JSON profiles and markets**
 6. **Verify all profiler tests pass**
 
-### Phase 2: Core & Ledger Schema v2 Migration
-1. Update `config/receipt_schema.csv` to 19-column Schema v2.
+### Phase 2: Core & Ledger Schema Migration
+1. Update `config/receipt_schema.csv` to 24-column Schema.
 2. Update `src/peit/core.py` validation and schema constants.
 3. Update `src/peit/ledger.py` (`LedgerEntry`, `compute_entry_id`, SQLite table schema, and CSV ingestion).
 4. Update tests (`test/test_core.py`, `test/test_ledger.py`, `test/test_cli.py`, `test/test_dashboard.py`).
@@ -394,5 +403,6 @@ python -m pytest test/ -v
 - Verify sticky price dynamics: shelf prices remain constant across small noise fluctuations and jump in discrete steps when the menu cost threshold is crossed.
 
 ### Manual Verification
-- Inspect generated CSV for exact 19-column Schema v2 alignment.
+- Inspect generated CSV for exact 24-column Schema alignment.
 - Verify `ground_truth.json` enables exact re-generation of identical data.
+- Verify description text is rendered from template with correct product/brand/variant interpolation.

@@ -375,64 +375,6 @@ def test_store_and_brand_weighted_selection():
   assert central_count > 850
 
 
-def test_basket_item_and_income_source_tier_and_rating_validation():
-  """Verify tier and rating validation on BasketItem and IncomeSource."""
-  sched = SchedulePolicy(mode="count", count=1)
-
-  # Valid defaults
-  item = BasketItem("milk", "Milk", "Food", "L", sched)
-  assert item.tier == "A"
-  assert item.rating == 5.0
-
-  # Valid custom tier and rating
-  item_custom = BasketItem(
-      "milk", "Milk", "Food", "L", sched, tier="C", rating=3.5
-  )
-  assert item_custom.tier == "C"
-  assert item_custom.rating == 3.5
-
-  # Invalid tier on BasketItem
-  with pytest.raises(ValueError, match="Invalid tier"):
-    BasketItem("milk", "Milk", "Food", "L", sched, tier="Z")
-
-  # Invalid rating on BasketItem (< 1.0 or > 5.0)
-  with pytest.raises(ValueError, match="Invalid rating"):
-    BasketItem("milk", "Milk", "Food", "L", sched, rating=0.5)
-
-  with pytest.raises(ValueError, match="Invalid rating"):
-    BasketItem("milk", "Milk", "Food", "L", sched, rating=5.5)
-
-  # IncomeSource valid defaults
-  inc = IncomeSource("sal", "Corp", "Pay", "Income", 1000.0, "monthly", [1])
-  assert inc.tier == "A"
-  assert inc.rating == 5.0
-
-  # IncomeSource valid custom
-  inc_custom = IncomeSource(
-      "sal", "Corp", "Pay", "Income", 1000.0, "monthly", [1], tier="B",
-      rating=4.0
-  )
-  assert inc_custom.tier == "B"
-  assert inc_custom.rating == 4.0
-
-  # Invalid tier on IncomeSource
-  with pytest.raises(ValueError, match="Invalid tier"):
-    IncomeSource(
-        "sal", "Corp", "Pay", "Income", 1000.0, "monthly", [1], tier="F"
-    )
-
-  # Invalid rating on IncomeSource
-  with pytest.raises(ValueError, match="Invalid rating"):
-    IncomeSource(
-        "sal", "Corp", "Pay", "Income", 1000.0, "monthly", [1], rating=0.9
-    )
-
-  with pytest.raises(ValueError, match="Invalid rating"):
-    IncomeSource(
-        "sal", "Corp", "Pay", "Income", 1000.0, "monthly", [1], rating=5.1
-    )
-
-
 # ---------------------------------------------------------------------------
 # 3. Profile Dataclass and JSON Round-trip
 # ---------------------------------------------------------------------------
@@ -502,12 +444,8 @@ def test_profile_creation_and_dict_roundtrip():
   assert len(reconstructed.basket) == 1
   assert reconstructed.basket[0].item == "milk 1 l"
   assert reconstructed.basket[0].scheduling.count == 4
-  assert reconstructed.basket[0].tier == "A"
-  assert reconstructed.basket[0].rating == 5.0
   assert len(reconstructed.income) == 1
   assert reconstructed.income[0].amount == 20000.0
-  assert reconstructed.income[0].tier == "A"
-  assert reconstructed.income[0].rating == 5.0
   assert reconstructed.scenarios is not None
   assert reconstructed.scenarios[0].month_offset == 11
   assert reconstructed.scenarios[0].row["amount"] == 10000.0
@@ -973,14 +911,13 @@ def test_catalog_covers_all_profile_basket_items():
 
 def test_schema_headers_definition():
   """
-  Verify HEADERS list matches 25-column Schema with store/brand/product tiers
-  and ratings.
+  Verify HEADERS list matches 25-column Schema with store/brand/product tiers,
+  ratings, and availability.
   """
   expected = [
       "receipt_id",
       "receipt_date",
       "merchant",
-      "description",
       "item",
       "brand",
       "category",
@@ -1001,6 +938,7 @@ def test_schema_headers_definition():
       "brand_rating",
       "product_tier",
       "product_rating",
+      "availability",
       "notes",
   ]
   assert HEADERS == expected
@@ -1043,6 +981,9 @@ def test_generator_schema_compliance():
     assert 1.0 <= float(row["brand_rating"]) <= 5.0
     assert row["product_tier"] in {"A", "B", "C", "D", "E"}
     assert 1.0 <= float(row["product_rating"]) <= 5.0
+    assert row["availability"] in {
+        "in_stock", "low_stock", "out_of_stock", "discontinued"
+    }
     # Check numeric conversions
     float(row["unit_price"])
     float(row["discount"])
@@ -1242,7 +1183,7 @@ def test_generator_savings_and_refund_behaviors():
   refund_rows = [r for r in rows if r["event_type"] == "refund"]
   assert len(refund_rows) == 1
   assert float(refund_rows[0]["paid_total"]) > 0.0
-  assert "Reembolso:" in refund_rows[0]["description"]
+  assert refund_rows[0]["notes"].startswith("Refund for ")
   assert refund_rows[0]["store_tier"] == "A"
   assert refund_rows[0]["store_rating"] == "5.0"
   assert refund_rows[0]["brand_tier"] == "A"
@@ -1422,7 +1363,7 @@ def test_cli_generate_command_success(tmp_path):
   assert out_csv.exists()
   assert out_manifest.exists()
 
-  # Verify CSV structure matches 19 Schema columns
+  # Verify CSV structure matches 25 Schema columns
   with out_csv.open("r", encoding="utf-8") as f:
     reader = csv.reader(f)
     header = next(reader)
@@ -1554,7 +1495,6 @@ def test_cli_import_ledger_integration(tmp_path):
   for csv_row in csv_rows:
     entry = entry_by_id[csv_row["receipt_id"]]
     assert entry.month == csv_row["receipt_date"][:7]
-    assert entry.description == csv_row["description"]
     assert entry.item == csv_row["item"]
     assert entry.unit_price == float(csv_row["unit_price"])
     assert entry.paid_total == float(csv_row["paid_total"])

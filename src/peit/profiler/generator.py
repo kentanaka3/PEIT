@@ -13,34 +13,17 @@ from typing import Any
 
 from peit.profiler.market import Market
 from peit.profiler.profile import Profile
+from peit.schema import (
+    RECEIPT_COLUMNS,
+    Availability,
+    EventType,
+    MAX_RATING,
+    QualityTier,
+    normalize_expense_sign,
+    normalize_income_sign,
+)
 
-HEADERS = [
-    "receipt_id",
-    "receipt_date",
-    "merchant",
-    "item",
-    "brand",
-    "category",
-    "quantity",
-    "pack_size",
-    "unit",
-    "unit_price",
-    "currency",
-    "discount",
-    "fee",
-    "tax",
-    "deposit",
-    "paid_total",
-    "event_type",
-    "store_tier",
-    "store_rating",
-    "brand_tier",
-    "brand_rating",
-    "product_tier",
-    "product_rating",
-    "availability",
-    "notes",
-]
+HEADERS = list(RECEIPT_COLUMNS)
 
 
 def generate(
@@ -113,19 +96,19 @@ def generate(
           if not row_dict.get("currency"):
             row_dict["currency"] = profile.currency
           if not row_dict.get("store_tier"):
-            row_dict["store_tier"] = "A"
+            row_dict["store_tier"] = QualityTier.A.value
           if not row_dict.get("store_rating"):
-            row_dict["store_rating"] = "5.0"
+            row_dict["store_rating"] = f"{MAX_RATING:.1f}"
           if not row_dict.get("brand_tier"):
-            row_dict["brand_tier"] = "A"
+            row_dict["brand_tier"] = QualityTier.A.value
           if not row_dict.get("brand_rating"):
-            row_dict["brand_rating"] = "5.0"
+            row_dict["brand_rating"] = f"{MAX_RATING:.1f}"
           if not row_dict.get("product_tier"):
-            row_dict["product_tier"] = "A"
+            row_dict["product_tier"] = QualityTier.A.value
           if not row_dict.get("product_rating"):
-            row_dict["product_rating"] = "5.0"
+            row_dict["product_rating"] = f"{MAX_RATING:.1f}"
           if not row_dict.get("availability"):
-            row_dict["availability"] = "in_stock"
+            row_dict["availability"] = Availability.IN_STOCK.value
 
           rows.append(row_dict)
 
@@ -140,6 +123,7 @@ def generate(
         noise = rng.gauss(0.0, inc.volatility) if inc.volatility > 0.0 else 0.0
         actual_amount = round(inc.amount * (1.0 + noise), 2)
         monthly_income += actual_amount
+        income_paid_total = normalize_income_sign(actual_amount)
 
         income_row: dict[str, str] = {
             "receipt_id": receipt_id,
@@ -157,15 +141,15 @@ def generate(
             "fee": "0.00",
             "tax": "0.00",
             "deposit": "0.00",
-            "paid_total": f"{actual_amount:.2f}",
-            "event_type": inc.event_type if inc.event_type else "income",
-            "store_tier": "A",
-            "store_rating": "5.0",
-            "brand_tier": "A",
-            "brand_rating": "5.0",
-            "product_tier": "A",
-            "product_rating": "5.0",
-            "availability": "in_stock",
+            "paid_total": f"{income_paid_total:.2f}",
+            "event_type": inc.event_type if inc.event_type else EventType.INCOME.value,
+            "store_tier": QualityTier.A.value,
+            "store_rating": f"{MAX_RATING:.1f}",
+            "brand_tier": QualityTier.A.value,
+            "brand_rating": f"{MAX_RATING:.1f}",
+            "product_tier": QualityTier.A.value,
+            "product_rating": f"{MAX_RATING:.1f}",
+            "availability": Availability.IN_STOCK.value,
             "notes": f"Income: {inc.description}",
         }
         rows.append(income_row)
@@ -259,7 +243,7 @@ def generate(
           )
           discount = round(gross * discount_rate, 2)
 
-        paid_total = -round(gross - discount, 2)
+        paid_total = normalize_expense_sign(gross - discount)
 
         row = {
             "receipt_id": receipt_id,
@@ -278,14 +262,14 @@ def generate(
             "tax": "0.00",
             "deposit": "0.00",
             "paid_total": f"{paid_total:.2f}",
-            "event_type": "recurring",
+            "event_type": EventType.RECURRING.value,
             "store_tier": store_tier,
             "store_rating": store_rating,
             "brand_tier": brand_tier,
             "brand_rating": brand_rating,
             "product_tier": product_tier,
             "product_rating": product_rating,
-            "availability": "in_stock",
+            "availability": Availability.IN_STOCK.value,
             "notes": "",
         }
         rows.append(row)
@@ -319,6 +303,7 @@ def generate(
       savings = round(
           monthly_income * profile.financial_behavior.savings_rate, 2
       )
+      savings_paid_total = normalize_expense_sign(savings)
       savings_row = {
           "receipt_id": f"REC-{year:04d}{calendar_month:02d}-{receipt_counter:05d}",
           "receipt_date": f"{year:04d}-{calendar_month:02d}-{max_days:02d}",
@@ -335,15 +320,15 @@ def generate(
           "fee": "0.00",
           "tax": "0.00",
           "deposit": "0.00",
-          "paid_total": f"{-savings:.2f}",
-          "event_type": "transfer",
-          "store_tier": "A",
-          "store_rating": "5.0",
-          "brand_tier": "A",
-          "brand_rating": "5.0",
-          "product_tier": "A",
-          "product_rating": "5.0",
-          "availability": "in_stock",
+          "paid_total": f"{savings_paid_total:.2f}",
+          "event_type": EventType.TRANSFER.value,
+          "store_tier": QualityTier.A.value,
+          "store_rating": f"{MAX_RATING:.1f}",
+          "brand_tier": QualityTier.A.value,
+          "brand_rating": f"{MAX_RATING:.1f}",
+          "product_tier": QualityTier.A.value,
+          "product_rating": f"{MAX_RATING:.1f}",
+          "availability": Availability.IN_STOCK.value,
           "notes": "Monthly dedicated savings transfer",
       }
       receipt_counter += 1
@@ -355,7 +340,7 @@ def generate(
     ):
       chosen = rng.choice(purchased_this_month)
       refund_day = rng.randint(1, max_days)
-      chosen_paid = abs(float(chosen["paid_total"]))
+      chosen_paid = normalize_income_sign(float(chosen["paid_total"]))
       refund_row = {
           "receipt_id": f"REC-{year:04d}{calendar_month:02d}-{receipt_counter:05d}",
           "receipt_date": f"{year:04d}-{calendar_month:02d}-{refund_day:02d}",
@@ -373,14 +358,14 @@ def generate(
           "tax": "0.00",
           "deposit": "0.00",
           "paid_total": f"{chosen_paid:.2f}",
-          "event_type": "refund",
-          "store_tier": chosen.get("store_tier", "A"),
-          "store_rating": chosen.get("store_rating", "5.0"),
-          "brand_tier": chosen.get("brand_tier", "A"),
-          "brand_rating": chosen.get("brand_rating", "5.0"),
-          "product_tier": chosen.get("product_tier", "A"),
-          "product_rating": chosen.get("product_rating", "5.0"),
-          "availability": chosen.get("availability", "in_stock"),
+          "event_type": EventType.REFUND.value,
+          "store_tier": chosen.get("store_tier", QualityTier.A.value),
+          "store_rating": chosen.get("store_rating", f"{MAX_RATING:.1f}"),
+          "brand_tier": chosen.get("brand_tier", QualityTier.A.value),
+          "brand_rating": chosen.get("brand_rating", f"{MAX_RATING:.1f}"),
+          "product_tier": chosen.get("product_tier", QualityTier.A.value),
+          "product_rating": chosen.get("product_rating", f"{MAX_RATING:.1f}"),
+          "availability": chosen.get("availability", Availability.IN_STOCK.value),
           "notes": f"Refund for {chosen['receipt_id']}",
       }
       receipt_counter += 1

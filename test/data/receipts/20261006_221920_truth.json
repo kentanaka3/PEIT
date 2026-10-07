@@ -1,0 +1,291 @@
+{
+  "image_file": "20261006_221920.jpg",
+  "receipt_metadata": {
+    "receipt_id": "rcpt-265704",
+    "receipt_date": "2026-10-01",
+    "merchant": "Real Canadian Superstore",
+    "currency": "CAD",
+    "subtotal": 145.96,
+    "discount_total": 0.00,
+    "tax_total": 5.52,
+    "fee_total": 0.00,
+    "deposit_total": 0.00,
+    "paid_total": 151.48,
+    "payment_method": "VISA"
+  },
+  "line_items": [
+    {
+      "item": "SENCHA TEA",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 7.29,
+      "total_price": 7.29,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "DAND RICE CRKER",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 2.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 5.48,
+      "total_price": 10.96,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "T&T NOODLES",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 4.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 1.49,
+      "total_price": 5.96,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "HW RST SES SD W",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 4.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 5.00,
+      "total_price": 20.00,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "POBLANO 226G",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 3.0,
+      "pack_size": 226.0,
+      "unit": "g",
+      "unit_price": 5.00,
+      "total_price": 15.00,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "FM AVOCADO BAG",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 4.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 3.58,
+      "total_price": 14.32,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "BANANA ORGANIC",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 0.965,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 2.14,
+      "total_price": 2.07,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "BANANA ORGANIC",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.205,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 2.14,
+      "total_price": 2.58,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "RIB BONES",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 10.13,
+      "total_price": 10.13,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "RIB BONES",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 11.67,
+      "total_price": 11.67,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "MNY VOL EXP MASC",
+      "brand": "Generic",
+      "category": "Household and personal care",
+      "quantity": 2.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 7.99,
+      "total_price": 15.98,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "REV SL LIPSTICK",
+      "brand": "Generic",
+      "category": "Household and personal care",
+      "quantity": 3.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 10.00,
+      "total_price": 30.00,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    }
+  ],
+  "text_blocks": [
+    {
+      "text": "REAL CANADIAN SUPERSTORE",
+      "bbox": {"x": 0.05, "y": 0.15, "width": 0.65, "height": 0.04},
+      "confidence": 1.0
+    },
+    {
+      "text": "SENCHA TEA 7.29",
+      "bbox": {"x": 0.28, "y": 0.23, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "DAND RICE CRKER 10.96",
+      "bbox": {"x": 0.28, "y": 0.25, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "T&T NOODLES 5.96",
+      "bbox": {"x": 0.28, "y": 0.30, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "HW RST SES SD W 20.00",
+      "bbox": {"x": 0.28, "y": 0.35, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "POBLANO 226G 15.00",
+      "bbox": {"x": 0.30, "y": 0.40, "width": 0.58, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "FM AVOCADO BAG 14.32",
+      "bbox": {"x": 0.30, "y": 0.43, "width": 0.58, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "BANANA ORGANIC 2.07",
+      "bbox": {"x": 0.28, "y": 0.47, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "BANANA ORGANIC 2.58",
+      "bbox": {"x": 0.28, "y": 0.49, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "RIB BONES 10.13",
+      "bbox": {"x": 0.28, "y": 0.52, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "RIB BONES 11.67",
+      "bbox": {"x": 0.28, "y": 0.54, "width": 0.60, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "MNY VOL EXP MASC 15.98",
+      "bbox": {"x": 0.30, "y": 0.62, "width": 0.58, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "REV SL LIPSTICK 30.00",
+      "bbox": {"x": 0.30, "y": 0.66, "width": 0.58, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "SUBTOTAL 145.96",
+      "bbox": {"x": 0.05, "y": 0.70, "width": 0.85, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "G=GST 5% 45.98 @ 5.000% 2.30",
+      "bbox": {"x": 0.07, "y": 0.72, "width": 0.83, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "P=PST 7% 45.98 @ 7.000% 3.22",
+      "bbox": {"x": 0.07, "y": 0.74, "width": 0.83, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "TOTAL 151.48",
+      "bbox": {"x": 0.05, "y": 0.76, "width": 0.85, "height": 0.02},
+      "confidence": 1.0
+    },
+    {
+      "text": "26/10/01 12:14:23",
+      "bbox": {"x": 0.30, "y": 0.85, "width": 0.35, "height": 0.02},
+      "confidence": 1.0
+    }
+  ]
+}
+

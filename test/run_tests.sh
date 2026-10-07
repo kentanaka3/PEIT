@@ -3,8 +3,9 @@
 # PEIT Test Runner (test/run_tests.sh)
 #
 # Production-grade, reproducible test runner for the PEIT test suites.
-# Executes core inflation algorithms, signed transaction ledger tests, and
-# CLI integration tests with clean reporting, timing, and exit codes.
+# Executes 11 test suites (schema, core, ledger, cli, dashboard, profiler,
+# server, mobile sync, ocr parser, ocr canvas, ocr benchmark) with clean
+# reporting, timing, and exit codes.
 # =============================================================================
 
 set -euo pipefail
@@ -48,7 +49,7 @@ log_error() { # 3
 }
 
 # Print usage instructions and available test suite options.
-usage() { # 39
+usage() { # 40
     cat <<EOF
 ${C_BOLD}NAME${C_RESET}
     ${SCRIPT} - PEIT test automation and test suite runner
@@ -61,18 +62,22 @@ ${C_BOLD}DESCRIPTION${C_RESET}
     Automatically configures PYTHONPATH and reports execution timing.
 
 ${C_BOLD}SUITES${C_RESET}
-    all         Run all test suites (core, ledger, cli, dashboard, profiler, server, mobile) [default]
-    core        Run core price index and schema tests (test/test_core.py)
-    ledger      Run ledger, cache, and financial balance tests (test/test_ledger.py)
-    cli         Run command-line interface integration tests (test/test_cli.py)
-    dashboard   Run multi-graph dashboard and visualization tests (test/test_dashboard.py)
-    profiler    Run profile generator & market dynamics tests (test/test_profiler.py)
-    server      Run synchronization daemon REST API tests (test/test_server.py)
-    mobile      Run mobile client sync & hash compatibility tests (test/test_mobile_sync.py)
+    all           Run all test suites (schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark) [default]
+    schema        Run canonical SSOT schema and contract tests (test/test_schema.py)
+    core          Run core price index and schema tests (test/test_core.py)
+    ledger        Run ledger, cache, and financial balance tests (test/test_ledger.py)
+    cli           Run command-line interface integration tests (test/test_cli.py)
+    dashboard     Run multi-graph dashboard and visualization tests (test/test_dashboard.py)
+    profiler      Run profile generator & market dynamics tests (test/test_profiler.py)
+    server        Run synchronization daemon REST API tests (test/test_server.py)
+    mobile        Run mobile client sync & hash compatibility tests (test/test_mobile_sync.py)
+    ocr           Run OCR and bilingual receipt parser prototype tests (test/test_ocr.py)
+    ocr_canvas    Run synthetic receipt image generator & distortion tests (test/test_ocr_canvas.py)
+    ocr_benchmark Run real photo benchmark suite & econometric evaluation tests (test/test_ocr_benchmark.py)
 
 ${C_BOLD}OPTIONS${C_RESET}
     -a, --all               Run all test suites.
-    -s, --suite <name>      Run a specific suite: core, ledger, cli, dashboard, profiler, server, mobile, or all.
+    -s, --suite <name>      Run a specific suite: schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, or all.
     -k, --keyword <pattern> Run tests matching the given keyword expression.
     -v, --verbose           Run pytest with verbose output (-vv).
     -q, --quiet             Run pytest with minimal output (-q).
@@ -106,13 +111,14 @@ find_pytest_runner() { # 14
 }
 
 # List available test suites, test files, and individual test counts.
-list_test_suites() { # 33
+list_test_suites() { # 34
     printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "SUITE" "FILE" "TEST CASES" "DESCRIPTION"
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
 
-    local -r suites=("core" "ledger" "cli" "dashboard" "profiler" "server" "mobile")
-    local -r files=("test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py")
+    local -r suites=("schema" "core" "ledger" "cli" "dashboard" "profiler" "server" "mobile" "ocr" "ocr_canvas" "ocr_benchmark")
+    local -r files=("test/test_schema.py" "test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py" "test/test_ocr.py" "test/test_ocr_canvas.py" "test/test_ocr_benchmark.py")
     local -r descs=(
+        "Canonical SSOT schema definitions, column sequences & hashes"
         "Core receipt schema validation & index algorithms"
         "Signed ledger, dual SQLite cache, balances & filters"
         "CLI parsing, commands, output formats & error handling"
@@ -120,6 +126,9 @@ list_test_suites() { # 33
         "Profile generator, market dynamics & CLI integration"
         "Local synchronization daemon REST API & push sync"
         "Mobile client sync payload & hash parity verification"
+        "OCR spatial clustering, bilingual parsing & balance checks"
+        "Synthetic receipt image generator & distortion pipeline"
+        "Real photo benchmark suite & econometric evaluation"
     )
 
     local total_tests=0
@@ -139,15 +148,18 @@ list_test_suites() { # 33
     done
 
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
-    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "7 files" "$total_tests" "Full test suite coverage"
+    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "11 files" "$total_tests" "Full test suite coverage"
 }
 
 # Map a suite name to its corresponding test file path.
-resolve_suite_targets() { # 33
+resolve_suite_targets() { # 42
     local -r suite_name="$1"
     case "$suite_name" in
         all)
-            echo "test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py"
+            echo "test/test_schema.py test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py test/test_ocr.py test/test_ocr_canvas.py test/test_ocr_benchmark.py"
+            ;;
+        schema)
+            echo "test/test_schema.py"
             ;;
         core)
             echo "test/test_core.py"
@@ -170,8 +182,17 @@ resolve_suite_targets() { # 33
         mobile)
             echo "test/test_mobile_sync.py"
             ;;
+        ocr)
+            echo "test/test_ocr.py"
+            ;;
+        ocr_canvas)
+            echo "test/test_ocr_canvas.py"
+            ;;
+        ocr_benchmark)
+            echo "test/test_ocr_benchmark.py"
+            ;;
         *)
-            log_error "Unknown test suite: '${suite_name}'. Allowed: all, core, ledger, cli, dashboard, profiler, server, mobile."
+            log_error "Unknown test suite: '${suite_name}'. Allowed: all, schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark."
             return 1
             ;;
     esac

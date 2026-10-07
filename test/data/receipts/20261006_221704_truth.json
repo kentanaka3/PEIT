@@ -1,0 +1,401 @@
+{
+  "image_file": "20261006_221704.jpg",
+  "receipt_metadata": {
+    "receipt_id": "rcpt-206045",
+    "receipt_date": "2026-10-05",
+    "merchant": "Costco Wholesale",
+    "currency": "CAD",
+    "subtotal": 360.41,
+    "discount_total": 45.00,
+    "tax_total": 0.00,
+    "fee_total": 0.00,
+    "deposit_total": 0.00,
+    "paid_total": 360.41,
+    "payment_method": "MASTERCARD"
+  },
+  "line_items": [
+    {
+      "item": "MARBLE CHEDD",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 15.99,
+      "total_price": 15.99,
+      "discount": 4.00,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "MOZZA 1KG",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 15.99,
+      "total_price": 15.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "KS GRK YGRT",
+      "brand": "Kirkland",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 11.99,
+      "total_price": 11.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "CH PIZZA GF",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 17.99,
+      "total_price": 17.99,
+      "discount": 4.00,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "UNSALTED BTR",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 5.79,
+      "total_price": 5.79,
+      "discount": 1.00,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "UNSALTED BTR",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 5.79,
+      "total_price": 5.79,
+      "discount": 1.00,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "KS PECANS",
+      "brand": "Kirkland",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 21.99,
+      "total_price": 21.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "ASPARAGUS",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 13.99,
+      "total_price": 13.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "UPLEAFBLEND",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 6.49,
+      "total_price": 6.49,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "LEAN GR BEEF",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 32.26,
+      "total_price": 32.26,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "PASTA SAUCE",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 14.99,
+      "total_price": 14.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "VERO VERO",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 8.99,
+      "total_price": 8.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "MINI CUKES",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 5.49,
+      "total_price": 5.49,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "TENDERLOIN",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 200.69,
+      "total_price": 200.69,
+      "discount": 35.00,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "KS ORG EGGS",
+      "brand": "Kirkland",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 13.49,
+      "total_price": 13.49,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "KS ORG EGGS",
+      "brand": "Kirkland",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 13.49,
+      "total_price": 13.49,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    }
+  ],
+  "text_blocks": [
+    {
+      "text": "COSTCO WHOLESALE",
+      "bbox": {"x": 0.15, "y": 0.02, "width": 0.70, "height": 0.08},
+      "confidence": 1.0
+    },
+    {
+      "text": "Prince George #158",
+      "bbox": {"x": 0.15, "y": 0.11, "width": 0.65, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "SELF-CHECKOUT",
+      "bbox": {"x": 0.28, "y": 0.21, "width": 0.48, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "1154953 MARBLE CHEDD 15.99",
+      "bbox": {"x": 0.15, "y": 0.28, "width": 0.70, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "4.00-",
+      "bbox": {"x": 0.75, "y": 0.31, "width": 0.12, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "83013 MOZZA 1KG 15.99",
+      "bbox": {"x": 0.20, "y": 0.33, "width": 0.65, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "434267 KS GRK YGRT 11.99",
+      "bbox": {"x": 0.17, "y": 0.35, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "301572 CH PIZZA GF 17.99",
+      "bbox": {"x": 0.17, "y": 0.37, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "4.00-",
+      "bbox": {"x": 0.75, "y": 0.39, "width": 0.12, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "373323 UNSALTED BTR 5.79",
+      "bbox": {"x": 0.17, "y": 0.41, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1.00-",
+      "bbox": {"x": 0.75, "y": 0.43, "width": 0.12, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "373323 UNSALTED BTR 5.79",
+      "bbox": {"x": 0.17, "y": 0.45, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1.00-",
+      "bbox": {"x": 0.75, "y": 0.47, "width": 0.12, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "203444 KS PECANS 21.99",
+      "bbox": {"x": 0.17, "y": 0.49, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "94676 ASPARAGUS 13.99",
+      "bbox": {"x": 0.20, "y": 0.51, "width": 0.65, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1744723 UPLEAFBLEND 6.49",
+      "bbox": {"x": 0.15, "y": 0.53, "width": 0.70, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "21927 LEAN GR BEEF 32.26",
+      "bbox": {"x": 0.20, "y": 0.55, "width": 0.65, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "7350255 PASTA SAUCE 14.99",
+      "bbox": {"x": 0.15, "y": 0.57, "width": 0.70, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1470428 VERO VERO 8.99",
+      "bbox": {"x": 0.15, "y": 0.59, "width": 0.70, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "378750 MINI CUKES 5.49",
+      "bbox": {"x": 0.17, "y": 0.61, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "21844 TENDERLOIN 200.69",
+      "bbox": {"x": 0.20, "y": 0.63, "width": 0.65, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "35.00-",
+      "bbox": {"x": 0.75, "y": 0.65, "width": 0.12, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "313963 KS ORG EGGS 13.49",
+      "bbox": {"x": 0.17, "y": 0.67, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "313963 KS ORG EGGS 13.49",
+      "bbox": {"x": 0.17, "y": 0.69, "width": 0.68, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "SUBTOTAL 360.41",
+      "bbox": {"x": 0.25, "y": 0.71, "width": 0.60, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "TAX 0.00",
+      "bbox": {"x": 0.25, "y": 0.73, "width": 0.60, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "TOTAL 360.41",
+      "bbox": {"x": 0.20, "y": 0.75, "width": 0.65, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "2026/10/05 15:21:38",
+      "bbox": {"x": 0.45, "y": 0.85, "width": 0.40, "height": 0.025},
+      "confidence": 1.0
+    }
+  ]
+}
+

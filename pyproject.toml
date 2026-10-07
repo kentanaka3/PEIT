@@ -13,6 +13,7 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "Pillow>=10.0.0",
 ]
 
 [project.scripts]

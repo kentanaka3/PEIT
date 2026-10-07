@@ -12,7 +12,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from peit.core import EVENT_TYPES, MONTH_RE, calculate_indices, read_csv
+from peit.core import MONTH_RE, calculate_indices, read_csv
 from peit.dashboard import create_dashboard, create_index_report
 from peit.ledger import (
     LedgerDatabase,
@@ -23,6 +23,7 @@ from peit.ledger import (
     import_csv,
     list_entries,
 )
+from peit.schema import Availability, EventType, QualityTier
 from peit.server import run_server
 
 
@@ -66,6 +67,10 @@ def build_parser() -> argparse.ArgumentParser:
   server_group.add_argument(
       "--port", type=int, default=8000, metavar="PORT",
       help="Port to bind synchronization daemon (default: %(default)s)",
+  )
+  server_group.add_argument(
+      "--broadcast", action=argparse.BooleanOptionalAction, default=True,
+      help="Advertise service via mDNS/Zeroconf on local network (default: True, use --no-broadcast to disable)",
   )
 
   # Ledger operations
@@ -383,11 +388,13 @@ def main(argv: list[str] | None = None) -> int:
     ledger_path = args.ledger if args.ledger else Path("data/ledger.jsonl")
     host = args.host
     port = args.port
+    broadcast = bool(args.broadcast)
     print(f"Starting PEIT synchronization daemon on http://{host}:{port}")
     print(f"Authoritative ledger: {ledger_path}")
+    print(f"Local mDNS broadcast: {'enabled' if broadcast else 'disabled'}")
     print("Press Ctrl+C to stop.")
     try:
-      run_server(ledger_path=ledger_path, host=host, port=port)
+      run_server(ledger_path=ledger_path, host=host, port=port, broadcast=broadcast)
     except KeyboardInterrupt:
       print("\nDaemon stopped.")
     return 0
@@ -549,9 +556,10 @@ def main(argv: list[str] | None = None) -> int:
           f"Error: Invalid date format '{args.date}'. Expected YYYY-MM-DD.\n")
       return 2
 
-    if args.event_type not in EVENT_TYPES:
+    allowed_event_types = [e.value for e in EventType]
+    if args.event_type not in allowed_event_types:
       sys.stderr.write(
-          f"Error: Invalid event-type '{args.event_type}'. Must be one of {sorted(EVENT_TYPES)}.\n"
+          f"Error: Invalid event-type '{args.event_type}'. Must be one of {sorted(allowed_event_types)}.\n"
       )
       return 2
 
@@ -560,19 +568,19 @@ def main(argv: list[str] | None = None) -> int:
     brand = args.brand if args.brand else ""
     pack_size = float(args.pack_size) if args.pack_size is not None else 1.0
     unit_price = args.unit_price
-    store_tier = args.store_tier or "A"
+    store_tier = args.store_tier or QualityTier.A.value
     store_rating = (
       float(args.store_rating) if args.store_rating is not None else 5.0
     )
-    brand_tier = args.brand_tier or "A"
+    brand_tier = args.brand_tier or QualityTier.A.value
     brand_rating = (
       float(args.brand_rating) if args.brand_rating is not None else 5.0
     )
-    product_tier = args.product_tier or "A"
+    product_tier = args.product_tier or QualityTier.A.value
     product_rating = (
       float(args.product_rating) if args.product_rating is not None else 5.0
     )
-    availability = args.availability or "in_stock"
+    availability = args.availability or Availability.IN_STOCK.value
     notes = args.notes if args.notes else ""
     account = args.account if args.account else "default:checking"
 

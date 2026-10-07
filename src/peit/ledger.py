@@ -20,33 +20,34 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from peit.core import (
-    AVAILABILITY_STATUSES,
-    EVENT_TYPES,
     MONTH_RE,
     read_csv,
     validate_rows,
 )
+from peit.schema import (
+    LEDGER_COLUMNS,
+    RECEIPT_COLUMNS,
+    EventType,
+    Availability,
+    QualityTier,
+    MIN_RATING,
+    MAX_RATING,
+    compute_entry_id,
+    normalize_expense_sign,
+    normalize_income_sign,
+)
 
-
-def compute_entry_id(
-    receipt_id: str,
-    item: str,
-    paid_total: float | str,
-    receipt_date: str,
-) -> str:
-  """Compute deterministic SHA-256 hash for deduplication.
-
-  Normalizes numeric values (e.g. -2.5, -2.50, and -2.500 produce the same hash)
-  and strips whitespace from string components.
-  """
-  try:
-    num_val = float(paid_total)
-    norm_amount = f"{num_val:.6f}"
-  except (ValueError, TypeError):
-    norm_amount = str(paid_total).strip()
-
-  raw = f"{str(receipt_id).strip()}|{str(item).strip()}|{norm_amount}|{str(receipt_date).strip()}"
-  return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+# Re-export compute_entry_id for backward compatibility
+__all__ = [
+    "LedgerEntry",
+    "LedgerDatabase",
+    "compute_entry_id",
+    "import_csv",
+    "add_entry",
+    "get_balance",
+    "list_entries",
+    "get_category_breakdown",
+]
 
 
 @dataclass
@@ -72,13 +73,13 @@ class LedgerEntry:
   deposit: float
   paid_total: float
   event_type: str
-  store_tier: str = "A"
-  store_rating: float = 5.0
-  brand_tier: str = "A"
-  brand_rating: float = 5.0
-  product_tier: str = "A"
-  product_rating: float = 5.0
-  availability: str = "in_stock"
+  store_tier: str = QualityTier.A.value
+  store_rating: float = MAX_RATING
+  brand_tier: str = QualityTier.A.value
+  brand_rating: float = MAX_RATING
+  product_tier: str = QualityTier.A.value
+  product_rating: float = MAX_RATING
+  availability: str = Availability.IN_STOCK.value
   notes: str = ""
   recorded_at: str = ""
 
@@ -117,13 +118,13 @@ class LedgerEntry:
         deposit=float(data.get("deposit", 0.0)),
         paid_total=float(data["paid_total"]),
         event_type=str(data["event_type"]),
-        store_tier=str(data["store_tier"]),
-        store_rating=float(data["store_rating"]),
-        brand_tier=str(data["brand_tier"]),
-        brand_rating=float(data["brand_rating"]),
-        product_tier=str(data["product_tier"]),
-        product_rating=float(data["product_rating"]),
-        availability=str(data.get("availability", "in_stock")),
+        store_tier=str(data.get("store_tier", QualityTier.A.value)),
+        store_rating=float(data.get("store_rating", MAX_RATING)),
+        brand_tier=str(data.get("brand_tier", QualityTier.A.value)),
+        brand_rating=float(data.get("brand_rating", MAX_RATING)),
+        product_tier=str(data.get("product_tier", QualityTier.A.value)),
+        product_rating=float(data.get("product_rating", MAX_RATING)),
+        availability=str(data.get("availability", Availability.IN_STOCK.value)),
         notes=str(data.get("notes", "")),
         recorded_at=str(data["recorded_at"]),
     )
@@ -437,18 +438,18 @@ class LedgerDatabase:
         net_balance += paid
         by_month[m]["net_balance"] += paid
 
-        if etype == "income":
+        if etype == EventType.INCOME.value:
           total_income += paid
           by_month[m]["total_income"] += paid
-        elif etype in ("recurring", "one_off"):
+        elif etype in (EventType.RECURRING.value, EventType.ONE_OFF.value):
           # Expenditure reported as positive display amount
           exp_val = abs(paid)
           total_expenditure += exp_val
           by_month[m]["total_expenditure"] += exp_val
-        elif etype == "transfer":
+        elif etype == EventType.TRANSFER.value:
           net_transfers += paid
           by_month[m]["net_transfers"] += paid
-        elif etype == "refund":
+        elif etype == EventType.REFUND.value:
           net_refunds += paid
           by_month[m]["net_refunds"] += paid
 
@@ -514,7 +515,7 @@ class LedgerDatabase:
     self._ensure_cache_valid()
     conn = self._get_connection()
     try:
-      where_clauses = ["event_type IN ('recurring', 'one_off')"]
+      where_clauses = [f"event_type IN ('{EventType.RECURRING.value}', '{EventType.ONE_OFF.value}')"]
       params: list[Any] = []
       if month:
         where_clauses.append("month = ?")
@@ -625,7 +626,7 @@ def import_csv(
         brand_rating=float(r["brand_rating"]),
         product_tier=r["product_tier"],
         product_rating=float(r["product_rating"]),
-        availability=str(r.get("availability", "in_stock")),
+        availability=str(r.get("availability", Availability.IN_STOCK.value)),
         notes=r.get("notes", ""),
         recorded_at=now_iso,
     )
@@ -650,13 +651,13 @@ def add_entry(
     unit_price: float | None = None,
     currency: str = "MXN",
     account: str = "default:checking",
-    store_tier: str = "A",
-    store_rating: float = 5.0,
-    brand_tier: str = "A",
-    brand_rating: float = 5.0,
-    product_tier: str = "A",
-    product_rating: float = 5.0,
-    availability: str = "in_stock",
+    store_tier: str = QualityTier.A.value,
+    store_rating: float = MAX_RATING,
+    brand_tier: str = QualityTier.A.value,
+    brand_rating: float = MAX_RATING,
+    product_tier: str = QualityTier.A.value,
+    product_rating: float = MAX_RATING,
+    availability: str = Availability.IN_STOCK.value,
     notes: str = "",
 ) -> LedgerEntry:
   """Validate and add a direct transaction entry to the ledger."""
@@ -675,18 +676,20 @@ def add_entry(
     raise ValueError(f"Invalid amount: {amount}. Must be numeric.")
 
   # Validate event_type
-  if event_type not in EVENT_TYPES:
+  allowed_event_types = {e.value for e in EventType}
+  if event_type not in allowed_event_types:
     raise ValueError(
-        f"Invalid event_type: {event_type}. Must be one of {sorted(EVENT_TYPES)}.")
+        f"Invalid event_type: {event_type}. Must be one of {sorted(allowed_event_types)}.")
 
   # Validate availability
-  if availability not in AVAILABILITY_STATUSES:
+  allowed_availabilities = {a.value for a in Availability}
+  if availability not in allowed_availabilities:
     raise ValueError(
-        f"Invalid availability: {availability}. Must be one of {sorted(AVAILABILITY_STATUSES)}."
+        f"Invalid availability: {availability}. Must be one of {sorted(allowed_availabilities)}."
     )
 
   # Validate tiers
-  valid_tiers = {"A", "B", "C", "D", "E"}
+  valid_tiers = {t.value for t in QualityTier}
   for t_name, t_val in [
       ("store_tier", store_tier),
       ("brand_tier", brand_tier),
@@ -707,9 +710,9 @@ def add_entry(
       rf = float(r_val)
     except (ValueError, TypeError):
       raise ValueError(f"Invalid rating ({r_name}): {r_val}. Must be numeric.")
-    if not (1.0 <= rf <= 5.0):
+    if not (MIN_RATING <= rf <= MAX_RATING):
       raise ValueError(
-          f"Invalid rating ({r_name}): {r_val}. Must be between 1.0 and 5.0."
+          f"Invalid rating ({r_name}): {r_val}. Must be between {MIN_RATING} and {MAX_RATING}."
       )
 
   # Validate currency
@@ -721,10 +724,10 @@ def add_entry(
   # For income/refund, paid_total should be positive
   # For transfer, signed amount as provided
   paid_total = amount_float
-  if event_type in ("recurring", "one_off") and paid_total > 0:
-    paid_total = -paid_total
-  elif event_type in ("income", "refund") and paid_total < 0:
-    paid_total = abs(paid_total)
+  if event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value) and paid_total > 0:
+    paid_total = normalize_expense_sign(paid_total)
+  elif event_type in (EventType.INCOME.value, EventType.REFUND.value) and paid_total < 0:
+    paid_total = normalize_income_sign(paid_total)
 
   receipt_id = f"TXN-{d.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8]}"
   recorded_at = datetime.now(timezone.utc).isoformat()

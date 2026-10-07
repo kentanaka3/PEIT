@@ -13,7 +13,7 @@ from typing import TextIO
 
 DEFAULT_INPUT = Path(__file__).resolve(
 ).parents[1] / "data" / "example_month.csv"
-SORT_FIELDS = ("receipt_date", "merchant", "item_raw", "quantity", "unit")
+SORT_FIELDS = ("receipt_date", "merchant", "item", "quantity", "unit")
 
 
 def _quantity_key(value: str) -> tuple[int, Decimal | str]:
@@ -35,7 +35,7 @@ def _sort_key(row: dict[str, str]) -> tuple[object, ...]:
   return (
       row["receipt_date"],
       row["merchant"],
-      row["item_raw"],
+      row["item"],
       _quantity_key(row["quantity"]),
       row["unit"],
   )

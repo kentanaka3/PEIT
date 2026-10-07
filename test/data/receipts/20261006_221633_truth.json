@@ -1,0 +1,126 @@
+{
+  "image_file": "20261006_221633.jpg",
+  "receipt_metadata": {
+    "receipt_id": "rcpt-220255",
+    "receipt_date": "2026-10-05",
+    "merchant": "Real Canadian Superstore",
+    "currency": "CAD",
+    "subtotal": 16.10,
+    "discount_total": 0.0,
+    "tax_total": 0.0,
+    "fee_total": 0.02,
+    "deposit_total": 0.10,
+    "paid_total": 16.10,
+    "payment_method": "VISA"
+  },
+  "line_items": [
+    {
+      "item": "DAIR MLK2%MF ORG",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 7.49,
+      "total_price": 7.49,
+      "discount": 0.0,
+      "fee": 0.02,
+      "tax": 0.0,
+      "deposit": 0.10,
+      "availability": "in_stock"
+    },
+    {
+      "item": "CELERY STALKS",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 1.99,
+      "total_price": 1.99,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    },
+    {
+      "item": "ROMAINE HEART",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 6.50,
+      "total_price": 6.50,
+      "discount": 0.0,
+      "fee": 0.0,
+      "tax": 0.0,
+      "deposit": 0.0,
+      "availability": "in_stock"
+    }
+  ],
+  "text_blocks": [
+    {
+      "text": "REAL CANADIAN SUPERSTORE",
+      "bbox": {"x": 0.10, "y": 0.10, "width": 0.65, "height": 0.05},
+      "confidence": 1.0
+    },
+    {
+      "text": "2155 FERRY AVE. PH:250-960-1327",
+      "bbox": {"x": 0.08, "y": 0.16, "width": 0.50, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "DAIR MLK2%MF ORG 7.49",
+      "bbox": {"x": 0.35, "y": 0.25, "width": 0.50, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "RECYCLING FEE 0.02",
+      "bbox": {"x": 0.15, "y": 0.26, "width": 0.70, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "DEPOSIT 1 0.10",
+      "bbox": {"x": 0.15, "y": 0.27, "width": 0.70, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "CELERY STALKS 1.99",
+      "bbox": {"x": 0.35, "y": 0.30, "width": 0.50, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "ROMAINE HEART 6.50",
+      "bbox": {"x": 0.35, "y": 0.32, "width": 0.50, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "SUBTOTAL 16.10",
+      "bbox": {"x": 0.08, "y": 0.33, "width": 0.80, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "TOTAL 16.10",
+      "bbox": {"x": 0.08, "y": 0.35, "width": 0.80, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "Number of Items: 3",
+      "bbox": {"x": 0.08, "y": 0.37, "width": 0.40, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "CAD$ 16.10",
+      "bbox": {"x": 0.55, "y": 0.41, "width": 0.25, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "26/10/05 14:25:57",
+      "bbox": {"x": 0.35, "y": 0.46, "width": 0.35, "height": 0.03},
+      "confidence": 1.0
+    }
+  ]
+}
+

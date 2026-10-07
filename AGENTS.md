@@ -10,7 +10,7 @@ PEIT/
 ├── config/   # configuration files, templates, and project data definitions
 ├── data/     # raw and processed datasets
 ├── doc/      # thesis, reports, figures, and supporting documentation
-├── LLM/      # LLM knowledge, prompts, workflows, experiments, and reviews
+├── mobile/   # Flutter mobile client (OCR, Drift SQLite, LAN sync)
 ├── src/      # Python source code
 ├── test/     # Python tests
 ├── util/     # utility scripts, templates, and helpers
@@ -52,9 +52,8 @@ version, or human review record.
 Run the smallest meaningful checks and record the outcome. For this scaffold:
 
 ```bash
-bash -n LLM/scripts/handler.sh
-bash LLM/scripts/handler.sh navigate --root "$PWD"
-bash LLM/scripts/handler.sh validate
+bash -n test/run_tests.sh
+bash test/run_tests.sh --all
 git diff --check
 git status --short
 ```
@@ -99,26 +98,6 @@ export PYTHONPATH="$PWD/src:$PYTHONPATH"
 
 ## Documentation and script navigation
 
-Use the unified Markdown handler before and after documentation work:
-
-```bash
-bash LLM/scripts/handler.sh navigate --root "$PWD"
-bash LLM/scripts/handler.sh validate
-```
-
-The handler is the authoritative entry point for documentation maintenance:
-
-- `init` creates only missing LLM directories and starter documents; it does
-  not recreate deleted legacy helper scripts.
-- `adr` creates a new Architecture Decision Record in `doc/adr/`
-  with a unique ID, title, and template.
-- `navigate` produces a Markdown inventory with repository-relative paths,
-  line counts, and heading locations. Use it to find the relevant context
-  before editing.
-- `validate` checks the documentation scaffold, handler prerequisites, and
-  required executable script/documentation entry points without modifying
-  files.
-
 When reconciling Markdown with implementation, inspect the referenced
 Makefile, Bash, and Python files directly. Record repository-relative paths and
 line ranges in the Markdown, distinguish documented behavior from inferred
@@ -133,40 +112,10 @@ the function declaration and include a `# N` comment counting the complete
 function body. Update that count whenever the function changes; treat it as a
 navigation aid rather than a permanent source reference.
 
-## Two-phase project validation
-
-Before declaring a documentation or script-navigation task complete, run the
-handler in two phases from the PhD project root:
-
-```bash
-bash LLM/scripts/handler.sh init --dry-run
-bash LLM/scripts/handler.sh validate --root "$PWD"
-```
-
-The first command previews workspace initialization and must not modify files.
-The second command performs the complete read-only validation, including the
-documentation scaffold, local Markdown paths, stale script references, Bash
-syntax, and malformed fenced code blocks. Do not replace the dry-run with
-`init` unless workspace creation is explicitly requested.
-
-For a single Bash template or script, use the handler's file mode:
-
-```bash
-bash LLM/scripts/handler.sh navigate --file LLM/scripts/default.sh
-bash LLM/scripts/handler.sh validate --file LLM/scripts/default.sh
-```
-
-File-mode validation checks only the selected supported script, including Bash
-syntax and inline function documentation line counts. Directory-mode
-validation remains the complete project check.
-
 ## Escalation and definition of done
 
 Ask before changing pipeline semantics, moving/deleting existing files,
 installing software, accessing restricted data, submitting jobs, or publishing.
-When requirements are ambiguous, make a conservative assumption, record it in
-`LLM/00_governance/decisions.md`, and list the unresolved issue in
-`LLM/00_governance/open_questions.md`.
 
 A change is done when the intended files are present, unrelated files are
 untouched, safety-sensitive paths are ignored, validation passes (or its

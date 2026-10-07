@@ -80,15 +80,13 @@ detected.
 
 ```bash
 bash -n path/to/script.sh
-bash LLM/scripts/handler.sh validate --file path/to/script.sh
 ```
 
 6. Finish with the repository checks:
 
 ```bash
-bash -n LLM/scripts/handler.sh
-bash LLM/scripts/handler.sh navigate --root "$PWD"
-bash LLM/scripts/handler.sh validate --root "$PWD"
+bash -n test/run_tests.sh
+bash test/run_tests.sh --all
 git diff --check
 git status --short
 ```

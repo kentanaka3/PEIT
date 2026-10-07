@@ -27,7 +27,7 @@ def write_csv(
     rows: list[dict[str, Any]], out_dest: TextIO | Path | str
 ) -> None:
   """
-  Write receipts to CSV using exact Schema 19 columns with csv.DictWriter.
+  Write receipts to CSV using exact Schema 25 columns with csv.DictWriter.
   """
   if isinstance(out_dest, (str, Path)):
     out_path = Path(out_dest)
@@ -58,10 +58,11 @@ def write_manifest(
 def import_to_ledger(
     rows: list[dict[str, Any]],
     ledger_path: Path | str,
-    output_csv: Path | str | None = None,
     account: str = "default:checking",
 ) -> tuple[int, int]:
-    """Convert Schema v2 receipt rows into native LedgerEntry objects and import into ledger.
+  """
+  Convert Schema receipt rows into native LedgerEntry objects and import
+  into ledger.
 
     Adapts Schema v2 fields to Schema v1 LedgerEntry:
       month = row["receipt_date"][:7]
@@ -75,54 +76,143 @@ def import_to_ledger(
     now_iso = datetime.now(timezone.utc).isoformat()
     entries: list[LedgerEntry] = []
 
-    for row in rows:
-        receipt_date = str(row["receipt_date"])
-        month = receipt_date[:7]
-        item_raw = str(row["description"])
-        item_normalized = str(row["item"])
-        shelf_unit_price = float(row["unit_price"])
-        paid_total = float(row["paid_total"])
-        receipt_id = str(row["receipt_id"])
+  for row in rows:
+    receipt_date = str(row["receipt_date"])
+    receipt_id = str(row["receipt_id"])
+    item = str(row["item"])
+    brand = str(row.get("brand", "") or "")
+    category = str(row["category"])
+    quantity = float(row["quantity"])
+    pack_size = float(row.get("pack_size", 1.0) or 1.0)
+    unit = str(row["unit"])
+    unit_price = float(row["unit_price"])
+    currency = str(row["currency"])
+    discount = float(row.get("discount", 0.0) or 0.0)
+    fee = float(row.get("fee", 0.0) or 0.0)
+    tax = float(row.get("tax", 0.0) or 0.0)
+    deposit = float(row.get("deposit", 0.0) or 0.0)
+    paid_total = float(row["paid_total"])
+    event_type = str(row["event_type"])
+    store_tier = str(row["store_tier"])
+    store_rating = float(row["store_rating"])
+    brand_tier = str(row["brand_tier"])
+    brand_rating = float(row["brand_rating"])
+    product_tier = str(row["product_tier"])
+    product_rating = float(row["product_rating"])
+    availability = str(row.get("availability", "in_stock") or "in_stock")
+    notes = str(row.get("notes") or "")
 
-        entry_id = compute_entry_id(
-            source_file=source_filename,
-            receipt_id=receipt_id,
-            item_normalized=item_normalized,
-            paid_total=paid_total,
-            receipt_date=receipt_date,
-        )
-
-        entry = LedgerEntry(
-            entry_id=entry_id,
-            month=month,
-            receipt_id=receipt_id,
-            receipt_date=receipt_date,
-            account=str(row.get("account") or account),
-            merchant=str(row["merchant"]),
-            item_raw=item_raw,
-            item_normalized=item_normalized,
-            category=str(row["category"]),
-            quantity=float(row["quantity"]),
-            unit=str(row["unit"]),
-            shelf_unit_price=shelf_unit_price,
-            currency=str(row["currency"]),
-            discount=float(row.get("discount", 0.0) or 0.0),
-            fee=float(row.get("fee", 0.0) or 0.0),
-            tax=float(row.get("tax", 0.0) or 0.0),
-            deposit=float(row.get("deposit", 0.0) or 0.0),
-            paid_total=paid_total,
-            event_type=str(row["event_type"]),
-            source_file=source_filename,
-            notes=str(row.get("notes") or ""),
-            recorded_at=now_iso,
-        )
-        entries.append(entry)
+    entry_id = compute_entry_id(
+        receipt_id=receipt_id,
+        item=item,
+        paid_total=paid_total,
+        receipt_date=receipt_date,
+    )
+    entry = LedgerEntry(
+        entry_id=entry_id,
+        receipt_id=receipt_id,
+        receipt_date=receipt_date,
+        account=str(row.get("account") or account),
+        merchant=str(row["merchant"]),
+        item=item,
+        brand=brand,
+        category=category,
+        quantity=quantity,
+        pack_size=pack_size,
+        unit=unit,
+        unit_price=unit_price,
+        currency=currency,
+        discount=discount,
+        fee=fee,
+        tax=tax,
+        deposit=deposit,
+        paid_total=paid_total,
+        event_type=event_type,
+        store_tier=store_tier,
+        store_rating=store_rating,
+        brand_tier=brand_tier,
+        brand_rating=brand_rating,
+        product_tier=product_tier,
+        product_rating=product_rating,
+        availability=availability,
+        notes=notes,
+        recorded_at=now_iso,
+    )
+    entries.append(entry)
 
   ledger_p = Path(ledger_path)
   if ledger_p.suffix == ".db":
     ledger_p = ledger_p.with_suffix(".jsonl")
   db = LedgerDatabase(ledger_p)
   return db.append_entries(entries)
+
+
+def generate_synthetic_receipt_image(
+    output_image_path: Path | str,
+    manifest_path: Path | str | None = None,
+    seed: int = 42,
+    distort: bool = True,
+) -> tuple[Path, list[dict[str, Any]], dict[str, Any]]:
+  """Generate a synthetic receipt image and optional ground-truth manifest.
+
+  Args:
+      output_image_path: Destination file path for rendered receipt image (PNG/JPG).
+      manifest_path: Optional destination file path for ground truth JSON manifest.
+      seed: Random seed for deterministic generation and distortions.
+      distort: Whether to apply camera/thermal distortions to the rendered canvas.
+
+  Returns:
+      Tuple of (output_path, ground_truth_blocks_dict, ground_truth_receipt_dict).
+  """
+  from peit.ocr.canvas import ReceiptCanvasGenerator, apply_distortions
+
+  out_path = Path(output_image_path)
+  out_path.parent.mkdir(parents=True, exist_ok=True)
+
+  # Deterministic seed initialization
+  generator = ReceiptCanvasGenerator()
+  image, blocks, gt_receipt = generator.generate_receipt()
+
+  if distort:
+    # Note: Keep rotation_deg=0.0 when exporting spatial ground truth manifests to preserve
+    # exact coordinate alignment between normalized bounding boxes and pixels. Photometric
+    # distortions (fading, vignette, noise) are safely applied.
+    image = apply_distortions(
+        image=image,
+        rotation_deg=0.0,
+        noise_level=0.02,
+        fade_contrast=0.85,
+        vignette=True,
+        seed=seed,
+    )
+
+  image.save(out_path)
+
+  blocks_data = [
+      {
+          "text": b.text,
+          "bbox": {
+              "x": b.bbox.x,
+              "y": b.bbox.y,
+              "width": b.bbox.width,
+              "height": b.bbox.height,
+          },
+          "confidence": b.confidence,
+      }
+      for b in blocks
+  ]
+  receipt_data = json.loads(gt_receipt.to_json())
+
+  if manifest_path is not None:
+    manifest = {
+        "image_path": str(out_path),
+        "receipt": receipt_data,
+        "blocks": blocks_data,
+        "seed": seed,
+    }
+    write_manifest(manifest, manifest_path)
+
+  return out_path, blocks_data, receipt_data
 
 
 def _add_generate_arguments(p: argparse.ArgumentParser) -> None:
@@ -165,9 +255,37 @@ def _add_generate_arguments(p: argparse.ArgumentParser) -> None:
   )
 
 
+def _add_generate_image_arguments(p: argparse.ArgumentParser) -> None:
+  p.add_argument(
+      "-o",
+      "--output",
+      type=Path,
+      required=True,
+      help="Path to output receipt image (e.g. receipt.png)",
+  )
+  p.add_argument(
+      "--manifest",
+      type=Path,
+      default=None,
+      help="Optional path to output ground truth JSON manifest",
+  )
+  p.add_argument(
+      "--seed",
+      type=int,
+      default=42,
+      help="Integer seed for reproducible distortions (default: 42)",
+  )
+  p.add_argument(
+      "--distort",
+      action=argparse.BooleanOptionalAction,
+      default=True,
+      help="Apply realistic camera and thermal distortions (default: True)",
+  )
+
+
 def build_parser() -> argparse.ArgumentParser:
   """
-  Construct argument parser supporting 'generate' sub-command and direct flags.
+  Construct argument parser supporting 'generate' and 'generate-image' sub-commands.
   """
   parser = argparse.ArgumentParser(
       prog="peit.profiler",
@@ -179,6 +297,12 @@ def build_parser() -> argparse.ArgumentParser:
       help="Generate synthetic receipts from Profile and Market JSON definitions.",
   )
   _add_generate_arguments(gen_parser)
+
+  img_parser = subparsers.add_parser(
+      "generate-image",
+      help="Generate synthetic thermal receipt image with ground-truth OCR metadata.",
+  )
+  _add_generate_image_arguments(img_parser)
   return parser
 
 
@@ -197,7 +321,7 @@ def main(argv: list[str] | None = None) -> int:
   #   python -m peit.profiler --profile ...
   # )
   first = effective_argv[0]
-  if first not in ("generate", "-h", "--help", "-v", "--version"):
+  if first not in ("generate", "generate-image", "-h", "--help", "-v", "--version"):
     effective_argv.insert(0, "generate")
 
   parser = build_parser()
@@ -206,9 +330,23 @@ def main(argv: list[str] | None = None) -> int:
   except SystemExit as e:
     return e.code if isinstance(e.code, int) else 2
 
-  if not hasattr(args, "command") or args.command != "generate":
+  if not hasattr(args, "command") or args.command not in ("generate", "generate-image"):
     parser.print_help(sys.stderr)
     return 2
+
+  if args.command == "generate-image":
+    try:
+      out_path, _, _ = generate_synthetic_receipt_image(
+          output_image_path=args.output,
+          manifest_path=args.manifest,
+          seed=args.seed,
+          distort=args.distort,
+      )
+      print(f"Generated synthetic receipt image at: {out_path}")
+      return 0
+    except Exception as e:
+      sys.stderr.write(f"Error generating receipt image: {e}\n")
+      return 2
 
   if not args.profile.exists():
     sys.stderr.write(f"Error: Profile file not found: {args.profile}\n")
@@ -258,7 +396,6 @@ def main(argv: list[str] | None = None) -> int:
       imported, skipped = import_to_ledger(
           rows=rows,
           ledger_path=args.import_ledger,
-          output_csv=args.output,
       )
       if args.output:
         print(

@@ -1,0 +1,71 @@
+{
+  "image_file": "20261006_221809.jpg",
+  "receipt_metadata": {
+    "receipt_id": "rcpt-0010017650",
+    "receipt_date": "2026-10-03",
+    "merchant": "Save-On-Foods",
+    "currency": "CAD",
+    "subtotal": 19.65,
+    "discount_total": 0.00,
+    "tax_total": 0.00,
+    "fee_total": 0.00,
+    "deposit_total": 0.00,
+    "paid_total": 19.65,
+    "payment_method": "MASTERCARD"
+  },
+  "line_items": [
+    {
+      "item": "XL Ground Beef",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 19.65,
+      "total_price": 19.65,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    }
+  ],
+  "text_blocks": [
+    {
+      "text": "Save-On-Foods Hart Highway",
+      "bbox": {"x": 0.15, "y": 0.12, "width": 0.70, "height": 0.04},
+      "confidence": 1.0
+    },
+    {
+      "text": "Canadian Owned and Operated",
+      "bbox": {"x": 0.15, "y": 0.16, "width": 0.70, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "XL Ground Beef 19.65",
+      "bbox": {"x": 0.05, "y": 0.22, "width": 0.85, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "Sub Total $19.65",
+      "bbox": {"x": 0.05, "y": 0.28, "width": 0.85, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "BALANCE DUE $19.65",
+      "bbox": {"x": 0.15, "y": 0.40, "width": 0.75, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "Credit $19.65",
+      "bbox": {"x": 0.12, "y": 0.43, "width": 0.78, "height": 0.03},
+      "confidence": 1.0
+    },
+    {
+      "text": "DATE/TIME: 10/03/2026 15:35:12",
+      "bbox": {"x": 0.05, "y": 0.68, "width": 0.75, "height": 0.03},
+      "confidence": 1.0
+    }
+  ]
+}
+

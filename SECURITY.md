@@ -16,13 +16,13 @@ and private URLs.
 
 Treat receipt rows, source files, audit ledgers, and external LLM inputs as
 potentially sensitive. Keep restricted data outside Git, use approved storage,
-and never commit `.env` files, credentials, raw catalogs, waveforms, or
-checkpoints. The current prototype has no network-facing service or
-authentication layer.
+and never commit `.env` files, credentials, raw catalogs, personal receipts,
+transaction ledgers, or checkpoints. The prototype provides an optional local HTTP
+REST synchronization daemon (`peit --serve`) intended strictly for local-network
+or loopback synchronization with the mobile client; it currently implements no
+authentication or encryption layer and must not be exposed to untrusted networks.
 
 ## Response boundary
 
 Maintainers should acknowledge reports, reproduce safely, assess impact,
-prepare a minimal fix, and document the resolution. Severity targets and a
-coordinated disclosure schedule remain project decisions recorded in
-`LLM/00_governance/open_questions.md`.
+prepare a minimal fix, and document the resolution.

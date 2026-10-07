@@ -22,8 +22,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Sequence
 
-from peit.core import EVENT_TYPES, MONTH_RE, calculate_indices
+from peit.core import MONTH_RE, calculate_indices
 from peit.ledger import LedgerDatabase, LedgerEntry, get_category_breakdown, list_entries
+from peit.schema import EventType
 
 DEFAULT_PALETTE = [
     "#3b82f6",  # Blue
@@ -64,13 +65,13 @@ def compute_summary_kpis(entries: Sequence[LedgerEntry]) -> dict[str, Any]:
     paid = float(e.paid_total)
     net_balance += paid
 
-    if e.event_type == "income":
+    if e.event_type == EventType.INCOME.value:
       total_income += paid
-    elif e.event_type in ("recurring", "one_off"):
+    elif e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value):
       total_expenditure += abs(paid)
-    elif e.event_type == "transfer":
+    elif e.event_type == EventType.TRANSFER.value:
       net_transfers += paid
-    elif e.event_type == "refund":
+    elif e.event_type == EventType.REFUND.value:
       net_refunds += paid
 
   return {
@@ -99,7 +100,7 @@ def aggregate_category_breakdown(
     totals: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
     for e in entries:
-      if e.event_type in ("recurring", "one_off"):
+      if e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value):
         cat = e.category or "General"
         totals[cat] += abs(float(e.paid_total))
         counts[cat] += 1
@@ -150,9 +151,9 @@ def aggregate_timeline(
     )
 
     paid = float(e.paid_total)
-    if e.event_type == "income":
+    if e.event_type == EventType.INCOME.value:
       income_map[time_key] += paid
-    elif e.event_type in ("recurring", "one_off"):
+    elif e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value):
       expense_map[time_key] += abs(paid)
 
   all_keys = sorted(set(income_map.keys()) | set(expense_map.keys()))
@@ -186,7 +187,7 @@ def aggregate_top_merchants(
   counts: dict[str, int] = defaultdict(int)
 
   for e in entries:
-    if e.event_type in ("recurring", "one_off"):
+    if e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value):
       m = e.merchant or "Unknown"
       totals[m] += abs(float(e.paid_total))
       counts[m] += 1
@@ -338,7 +339,7 @@ def compute_inflation_and_welfare(
   or when benchmark data is unavailable.
   """
   consumption_entries = [
-      e for e in entries if e.event_type in ("recurring", "one_off")
+      e for e in entries if e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value)
   ]
   months_grouped: dict[str, list[LedgerEntry]] = defaultdict(list)
   for e in consumption_entries:
@@ -705,13 +706,13 @@ def generate_dashboard_html(
     amount_float = float(e.paid_total)
 
     badge_class = "badge-gray"
-    if e.event_type == "income":
+    if e.event_type == EventType.INCOME.value:
       badge_class = "badge-green"
-    elif e.event_type in ("recurring", "one_off"):
+    elif e.event_type in (EventType.RECURRING.value, EventType.ONE_OFF.value):
       badge_class = "badge-red"
-    elif e.event_type == "transfer":
+    elif e.event_type == EventType.TRANSFER.value:
       badge_class = "badge-blue"
-    elif e.event_type == "refund":
+    elif e.event_type == EventType.REFUND.value:
       badge_class = "badge-teal"
 
     amount_str = f"{amount_float:+,.2f} {esc_curr}"

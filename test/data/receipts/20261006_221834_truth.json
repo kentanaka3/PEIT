@@ -1,0 +1,186 @@
+{
+  "image_file": "20261006_221834.jpg",
+  "receipt_metadata": {
+    "receipt_id": "rcpt-220254",
+    "receipt_date": "2026-10-05",
+    "merchant": "Real Canadian Superstore",
+    "currency": "CAD",
+    "subtotal": 25.08,
+    "discount_total": 0.00,
+    "tax_total": 0.00,
+    "fee_total": 0.00,
+    "deposit_total": 0.00,
+    "paid_total": 25.08,
+    "payment_method": "VISA"
+  },
+  "line_items": [
+    {
+      "item": "NNI PEPPERS 2.5",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.0,
+      "pack_size": 2.5,
+      "unit": "ea",
+      "unit_price": 6.00,
+      "total_price": 6.00,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "FM AVOCADO BAG",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 2.0,
+      "pack_size": 1.0,
+      "unit": "ea",
+      "unit_price": 4.58,
+      "total_price": 9.16,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "BANANA",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 0.905,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 1.72,
+      "total_price": 1.56,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "TOMATO ROMA",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 0.905,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 4.23,
+      "total_price": 3.83,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "BANANA ORGANIC",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.040,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 2.14,
+      "total_price": 2.23,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    },
+    {
+      "item": "BANANA ORGANIC",
+      "brand": "Generic",
+      "category": "Food and beverages",
+      "quantity": 1.075,
+      "pack_size": 1.0,
+      "unit": "kg",
+      "unit_price": 2.14,
+      "total_price": 2.30,
+      "discount": 0.00,
+      "fee": 0.00,
+      "tax": 0.00,
+      "deposit": 0.00,
+      "availability": "in_stock"
+    }
+  ],
+  "text_blocks": [
+    {
+      "text": "REAL CANADIAN SUPERSTORE",
+      "bbox": {"x": 0.10, "y": 0.10, "width": 0.65, "height": 0.05},
+      "confidence": 1.0
+    },
+    {
+      "text": "NNI PEPPERS 2.5 6.00",
+      "bbox": {"x": 0.30, "y": 0.25, "width": 0.55, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "(2) 06148301024 FM AVOCADO BAG",
+      "bbox": {"x": 0.05, "y": 0.27, "width": 0.60, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "2 @ $4.58 9.16",
+      "bbox": {"x": 0.08, "y": 0.29, "width": 0.80, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "4011 BANANA",
+      "bbox": {"x": 0.05, "y": 0.31, "width": 0.40, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "0.905 kg @ $1.72/kg 1.56",
+      "bbox": {"x": 0.08, "y": 0.33, "width": 0.80, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "4087 TOMATO ROMA",
+      "bbox": {"x": 0.05, "y": 0.35, "width": 0.45, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "0.905 kg @ $4.23/kg 3.83",
+      "bbox": {"x": 0.08, "y": 0.37, "width": 0.80, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "94011 BANANA ORGANIC",
+      "bbox": {"x": 0.05, "y": 0.39, "width": 0.50, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1.040 kg @ $2.14/kg 2.23",
+      "bbox": {"x": 0.08, "y": 0.41, "width": 0.80, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "1.075 kg @ $2.14/kg 2.30",
+      "bbox": {"x": 0.08, "y": 0.43, "width": 0.80, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "SUBTOTAL 25.08",
+      "bbox": {"x": 0.05, "y": 0.49, "width": 0.85, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "TOTAL 25.08",
+      "bbox": {"x": 0.05, "y": 0.52, "width": 0.85, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "Number of Items: 7",
+      "bbox": {"x": 0.05, "y": 0.54, "width": 0.40, "height": 0.025},
+      "confidence": 1.0
+    },
+    {
+      "text": "26/10/05 14:25:24",
+      "bbox": {"x": 0.30, "y": 0.63, "width": 0.35, "height": 0.025},
+      "confidence": 1.0
+    }
+  ]
+}
+

@@ -10,17 +10,21 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable
 
-MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
-REQUIRED = (
-    "receipt_id", "receipt_date", "merchant", "item", "brand", "category",
-    "quantity", "pack_size", "unit", "unit_price", "currency", "discount",
-    "fee", "tax", "deposit", "paid_total", "event_type", "store_tier",
-    "store_rating", "brand_tier", "brand_rating", "product_tier",
-    "product_rating", "availability", "notes",
+from peit.schema import (
+    CURRENCY_REGEX,
+    MAX_RATING,
+    MIN_RATING,
+    RECEIPT_COLUMNS,
+    Availability,
+    EventType,
+    QualityTier,
 )
-EVENT_TYPES = {"recurring", "one_off", "transfer", "refund", "income"}
-AVAILABILITY_STATUSES = {"in_stock", "low_stock", "out_of_stock", "discontinued"}
-TIERS = {"A", "B", "C", "D", "E"}
+
+MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
+REQUIRED: tuple[str, ...] = RECEIPT_COLUMNS
+EVENT_TYPES: frozenset[str] = frozenset(e.value for e in EventType)
+AVAILABILITY_STATUSES: frozenset[str] = frozenset(a.value for a in Availability)
+TIERS: frozenset[str] = frozenset(t.value for t in QualityTier)
 STATUS_INSUFFICIENT = {
     "status": "insufficient_history",
     "message": "Insufficient historical data",
@@ -79,7 +83,7 @@ def validate_rows(rows: Iterable[dict[str, str]]) -> list[ValidationIssue]:
         "unit_price", "discount", "fee", "tax", "deposit", "paid_total"
     ):
       _number(row[field], field, row_number, issues)
-    if not re.fullmatch(r"[A-Za-z]{3}", str(row["currency"])):
+    if not CURRENCY_REGEX.fullmatch(str(row["currency"])):
       issues.append(ValidationIssue(
           row_number, "currency", "must be a three-letter code"))
     if row["event_type"] not in EVENT_TYPES:
@@ -92,12 +96,12 @@ def validate_rows(rows: Iterable[dict[str, str]]) -> list[ValidationIssue]:
     for field in ("store_rating", "brand_rating", "product_rating"):
       try:
         rating = float(row[field])
-        if not (1.0 <= rating <= 5.0):
+        if not (MIN_RATING <= rating <= MAX_RATING):
           issues.append(ValidationIssue(
-              row_number, field, "must be between 1.0 and 5.0"))
+              row_number, field, f"must be between {MIN_RATING} and {MAX_RATING}"))
       except (ValueError, TypeError):
         issues.append(ValidationIssue(
-            row_number, field, "must be between 1.0 and 5.0"))
+            row_number, field, f"must be between {MIN_RATING} and {MAX_RATING}"))
     if row["availability"] not in AVAILABILITY_STATUSES:
       issues.append(
           ValidationIssue(

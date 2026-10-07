@@ -1,2 +1,2 @@
-receipt_id,receipt_date,merchant,description,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,notes
-receipt-001,2026-01-15,Example Market,Milk 1 L,milk 1 l,Example Brand,Food and beverages,1,1,L,2.50,MXN,0,0,0,0,-2.50,recurring,A,4.8,B,4.5,A,5.0,Illustrative data only
+receipt_id,receipt_date,merchant,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,availability,notes
+receipt-001,2026-01-15,Example Market,milk 1 l,Example Brand,Food and beverages,1,1,L,2.50,MXN,0,0,0,0,-2.50,recurring,A,4.8,B,4.5,A,5.0,in_stock,Illustrative data only

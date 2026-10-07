@@ -18,8 +18,9 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from peit.core import REQUIRED, calculate_indices, validate_rows
-from peit.ledger import LedgerDatabase, LedgerEntry, compute_entry_id
+from peit.core import calculate_indices, validate_rows
+from peit.ledger import LedgerDatabase, LedgerEntry
+from peit.schema import EventType, RECEIPT_COLUMNS, compute_entry_id
 
 VERSION = "0.1.0"
 MAX_PAYLOAD_BYTES = 10 * 1024 * 1024  # 10 MB payload limit for sync push
@@ -121,7 +122,7 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
         "version": VERSION,
         "ledger": str(self.server.ledger_path),
         "entry_count": count,
-        "schema_columns": len(REQUIRED),
+        "schema_columns": len(RECEIPT_COLUMNS),
     }
     self.send_json(200, payload)
 
@@ -238,6 +239,16 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
           {
               "error": "bad_request",
               "message": "Invalid Content-Length header",
+          },
+      )
+      return
+
+    if content_length > MAX_PAYLOAD_BYTES:
+      self.send_json(
+          413,
+          {
+              "error": "payload_too_large",
+              "message": f"Payload size exceeds limit of {MAX_PAYLOAD_BYTES} bytes",
           },
       )
       return

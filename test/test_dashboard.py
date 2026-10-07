@@ -34,7 +34,6 @@ def make_entry(
     receipt_date: str = "2026-01-15",
     account: str = "default:checking",
     merchant: str = "SuperMart",
-    description: str = "Milk",
     item: str = "milk",
     brand: str = "Lala",
     category: str = "Groceries",
@@ -55,15 +54,9 @@ def make_entry(
     brand_rating: float = 5.0,
     product_tier: str = "A",
     product_rating: float = 5.0,
-    tier: str | None = None,
-    rating: float | None = None,
+    availability: str = "in_stock",
     notes: str = "",
     recorded_at: str = "2026-01-15T12:00:00Z",
-    month: str | None = None,
-    item_raw: str | None = None,
-    item_normalized: str | None = None,
-    shelf_unit_price: float | None = None,
-    source_file: str | None = None,
 ) -> LedgerEntry:
   return LedgerEntry(
       entry_id=entry_id,
@@ -71,7 +64,6 @@ def make_entry(
       receipt_date=receipt_date,
       account=account,
       merchant=merchant,
-      description=description,
       item=item,
       brand=brand,
       category=category,
@@ -92,6 +84,7 @@ def make_entry(
       brand_rating=brand_rating,
       product_tier=product_tier,
       product_rating=product_rating,
+      availability=availability,
       notes=notes,
       recorded_at=recorded_at,
   )
@@ -156,16 +149,16 @@ def test_aggregate_category_breakdown():
 def test_aggregate_timeline_monthly_and_daily():
   entries = [
       make_entry(
-          entry_id="1", receipt_date="2026-01-10", month="2026-01",
-          paid_total=2000.0, event_type="income"
+          entry_id="1", receipt_date="2026-01-10", paid_total=2000.0,
+          event_type="income"
       ),
       make_entry(
-          entry_id="2", receipt_date="2026-01-15", month="2026-01",
-          paid_total=-500.0, event_type="recurring"
+          entry_id="2", receipt_date="2026-01-15", paid_total=-500.0,
+          event_type="recurring"
       ),
       make_entry(
-          entry_id="3", receipt_date="2026-02-05", month="2026-02",
-          paid_total=-300.0, event_type="one_off"
+          entry_id="3", receipt_date="2026-02-05", paid_total=-300.0,
+          event_type="one_off"
       ),
   ]
 
@@ -231,22 +224,22 @@ def test_bennett_decomposition_zero_residual():
   # Month 2: Milk (qty 12, price 3.0 -> spend 36), Bread (qty 4, price 3.5 -> spend 14)
   entries = [
       make_entry(
-          entry_id="m1_1", receipt_date="2026-01-10", description="Milk",
+          entry_id="m1_1", receipt_date="2026-01-10",
           item="milk", brand="Lala", category="Dairy", quantity=10.0,
           pack_size=1.0, unit_price=2.0, paid_total=-20.0,
       ),
       make_entry(
-          entry_id="m1_2", receipt_date="2026-01-15", description="Bread",
+          entry_id="m1_2", receipt_date="2026-01-15",
           item="bread", brand="Bimbo", category="Bakery", quantity=5.0,
           pack_size=1.0, unit_price=3.0, paid_total=-15.0,
       ),
       make_entry(
-          entry_id="m2_1", receipt_date="2026-02-10", description="Milk",
+          entry_id="m2_1", receipt_date="2026-02-10",
           item="milk", brand="Lala", category="Dairy", quantity=12.0,
           pack_size=1.0, unit_price=3.0, paid_total=-36.0,
       ),
       make_entry(
-          entry_id="m2_2", receipt_date="2026-02-15", description="Bread",
+          entry_id="m2_2", receipt_date="2026-02-15",
           item="bread", brand="Bimbo", category="Bakery", quantity=4.0,
           pack_size=1.0, unit_price=3.5, paid_total=-14.0,
       ),
@@ -277,7 +270,7 @@ def test_bennett_decomposition_zero_residual():
 def test_inflation_graceful_degradation():
   # Single month data should degrade gracefully
   entries = [
-      make_entry(entry_id="1", month="2026-01", paid_total=-50.0),
+      make_entry(entry_id="1", paid_total=-50.0),
   ]
   res = compute_inflation_and_welfare(entries)
   assert res["has_data"] is False
@@ -409,7 +402,9 @@ def test_cli_dashboard_integration(tmp_path: Path, monkeypatch, capsys):
 
   # Verify --html flag behaves identically
   out_html2 = tmp_path / "cli_dashboard_html_flag.html"
-  exit_code2 = cli_main(["--ledger", str(ledger_file), "--html", "-o", str(out_html2)])
+  exit_code2 = cli_main([
+      "--ledger", str(ledger_file),
+      "--html", "-o", str(out_html2)])
   assert exit_code2 == 0
   assert out_html2.exists()
 
@@ -472,7 +467,7 @@ def test_create_index_report_api(tmp_path: Path):
 
   # Custom output path
   custom_out = tmp_path / "custom" / "report.html"
-  out_custom = create_index_report(report, csv_file, output_path=custom_out, open_browser=False)
+  out_custom = create_index_report(
+      report, csv_file, output_path=custom_out, open_browser=False)
   assert out_custom.exists()
   assert out_custom == custom_out.resolve()
-

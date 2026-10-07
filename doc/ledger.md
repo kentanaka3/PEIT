@@ -112,6 +112,56 @@ Every transaction in the ledger conforms to the `LedgerEntry` schema, combining 
 | `notes` | `str` | `TEXT NOT NULL` | Optional user annotations or transaction details. |
 | `recorded_at` | `str` | `TEXT NOT NULL` | ISO 8601 UTC timestamp when the record entered the ledger. |
 
+### 3.1 SQLite Projection Cache Schema
+
+The sibling database projection cache (`<name>.db`) maintains the following table structure:
+
+```sql
+CREATE TABLE IF NOT EXISTS entries (
+    entry_id TEXT PRIMARY KEY,
+    month TEXT NOT NULL,
+    receipt_id TEXT NOT NULL,
+    receipt_date TEXT NOT NULL,
+    account TEXT NOT NULL,
+    merchant TEXT NOT NULL,
+    item TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    category TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    pack_size REAL NOT NULL,
+    unit TEXT NOT NULL,
+    unit_price REAL NOT NULL,
+    currency TEXT NOT NULL,
+    discount REAL NOT NULL,
+    fee REAL NOT NULL,
+    tax REAL NOT NULL,
+    deposit REAL NOT NULL,
+    paid_total REAL NOT NULL,
+    event_type TEXT NOT NULL,
+    store_tier TEXT NOT NULL,
+    store_rating REAL NOT NULL,
+    brand_tier TEXT NOT NULL,
+    brand_rating REAL NOT NULL,
+    product_tier TEXT NOT NULL,
+    product_rating REAL NOT NULL,
+    availability TEXT NOT NULL,
+    notes TEXT NOT NULL,
+    recorded_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_entries_month ON entries(month);
+CREATE INDEX IF NOT EXISTS idx_entries_receipt_date ON entries(receipt_date);
+CREATE INDEX IF NOT EXISTS idx_entries_account ON entries(account);
+CREATE INDEX IF NOT EXISTS idx_entries_category ON entries(category);
+CREATE INDEX IF NOT EXISTS idx_entries_merchant ON entries(merchant);
+CREATE INDEX IF NOT EXISTS idx_entries_event_type ON entries(event_type);
+
+CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+```
+
 ---
 
 ## 4. Deduplication & Idempotency Protocol
@@ -121,9 +171,28 @@ To prevent double-counting when CSV receipt files are re-imported or when multip
 $$\text{entry\_id} = \text{SHA-256}\Big(\text{receipt\_id} \mid \text{item} \mid \text{paid\_total}_{(\text{norm})} \mid \text{receipt\_date}\Big)$$
 
 ### 4.1 Numeric and Text Normalization
-The `compute_entry_id` function normalizes float values to six decimal places (`-2.500000`).
-Therefore, representations like `-2.5`, `-2.50`, and `-2.500` generate identical hashes.
-String components are stripped of extraneous leading and trailing whitespace.
+
+The `compute_entry_id` implementation normalizes components as follows:
+```python
+def compute_entry_id(
+    receipt_id: str,
+    item: str,
+    paid_total: float | str,
+    receipt_date: str,
+) -> str:
+  try:
+    num_val = float(paid_total)
+    norm_amount = f"{num_val:.6f}"
+  except (ValueError, TypeError):
+    norm_amount = str(paid_total).strip()
+
+  raw = f"{str(receipt_id).strip()}|{str(item).strip()}|{norm_amount}|{str(receipt_date).strip()}"
+  return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+```
+
+- Float amounts are normalized to six decimal places (`-2.500000`). Consequently, representations like `-2.5`, `-2.50`, and `-2.500` yield identical hashes.
+- String components (`receipt_id`, `item`, `receipt_date`) are stripped of leading and trailing whitespace.
+- Receipt identity is independent of the filename or staging path.
 
 ### 4.2 Ingestion Guarantees
 - **First Import**: All rows in the CSV are hashed, written to the JSONL log, and indexed in SQLite (`imported=N, skipped=0`).
@@ -339,7 +408,7 @@ Additionally, `test/test_core.py` validates underlying price index formulas (`co
 
 ### 6.2 The Scientific Test Runner (`test/run_tests.sh`)
 
-PEIT provides a standardized Bash runner script executing **97 unit and integration tests** across 5 suites:
+PEIT provides a standardized Bash runner script executing **142 unit and integration tests** across 10 suites:
 
 ```bash
 # View usage and options
@@ -348,15 +417,20 @@ bash test/run_tests.sh --help
 # List available suites and test counts
 bash test/run_tests.sh --list
 
-# Execute all 97 test cases
+# Execute all 142 test cases
 bash test/run_tests.sh --all
 
 # Execute a specific suite
-bash test/run_tests.sh --suite profiler   # Profile generator, market dynamics & CLI (37 tests)
-bash test/run_tests.sh --suite ledger     # Signed ledger, SQLite cache, balances & filters (26 tests)
-bash test/run_tests.sh --suite dashboard  # Multi-graph dashboard visualizer & KPI metrics (14 tests)
-bash test/run_tests.sh --suite cli        # Command-line interface parsing & commands (13 tests)
-bash test/run_tests.sh --suite core       # Core Schema validation & index algorithms (7 tests)
+bash test/run_tests.sh --suite profiler      # Profile generator, market dynamics & CLI (40 tests)
+bash test/run_tests.sh --suite ledger        # Signed ledger, SQLite cache, balances & filters (26 tests)
+bash test/run_tests.sh --suite dashboard     # Multi-graph dashboard visualizer & KPI metrics (14 tests)
+bash test/run_tests.sh --suite cli           # Command-line interface parsing & commands (14 tests)
+bash test/run_tests.sh --suite server        # Desktop sync daemon & REST endpoints (11 tests)
+bash test/run_tests.sh --suite core          # Core Schema validation & index algorithms (10 tests)
+bash test/run_tests.sh --suite ocr           # Heuristic spatial OCR parser & models (9 tests)
+bash test/run_tests.sh --suite ocr_canvas    # Synthetic thermal canvas & distortions (7 tests)
+bash test/run_tests.sh --suite ocr_benchmark # Real receipt photo evaluation harness (6 tests)
+bash test/run_tests.sh --suite mobile        # Mobile chunked sync & mDNS discovery (5 tests)
 
 # Filter tests by keyword pattern
 bash test/run_tests.sh -k "deterministic"

@@ -67,7 +67,6 @@ def test_t1_4_serialization_roundtrip():
       receipt_date="2026-01-15",
       account="default:checking",
       merchant="Example Market",
-      description="Milk 1 L",
       item="milk 1 l",
       brand="Lala",
       category="Food and beverages",
@@ -105,9 +104,8 @@ def test_t1_4_serialization_roundtrip():
   assert roundtrip.brand_rating == 4.5
   assert roundtrip.product_tier == "C"
   assert roundtrip.product_rating == 4.0
-  assert roundtrip.tier == "C"
-  assert roundtrip.rating == 4.0
   assert isinstance(roundtrip.product_rating, float)
+  assert roundtrip.availability == "in_stock"
 
 
 # ============================================================================
@@ -136,15 +134,13 @@ def test_t2_1_initial_storage_creation(tmp_path):
   columns = {r[1] for r in cur.execute("PRAGMA table_info(entries)")}
   expected = {
       "entry_id", "month", "receipt_id", "receipt_date", "account", "merchant",
-      "description", "item", "brand", "category", "quantity", "pack_size",
-      "unit", "unit_price", "currency", "discount", "fee", "tax", "deposit",
+      "item", "brand", "category", "quantity", "pack_size", "unit",
+      "unit_price", "currency", "discount", "fee", "tax", "deposit",
       "paid_total", "event_type", "store_tier", "store_rating", "brand_tier",
-      "brand_rating", "product_tier", "product_rating", "notes", "recorded_at"
+      "brand_rating", "product_tier", "product_rating", "availability",
+      "notes", "recorded_at"
   }
   assert columns == expected
-  assert "item_raw" not in columns
-  assert "shelf_unit_price" not in columns
-  assert "source_file" not in columns
   conn.close()
 
 
@@ -160,7 +156,6 @@ def test_t2_2_dual_write_atomicity_and_consistency(tmp_path):
           receipt_date="2026-01-10",
           account="default:checking",
           merchant="Shop",
-          description="Item",
           item="item",
           brand="Brand",
           category="General",
@@ -216,7 +211,6 @@ def test_t2_3_staleness_detection_on_external_jsonl_append(tmp_path):
       receipt_date="2026-01-10",
       account="default:checking",
       merchant="Shop",
-      description="Item",
       item="item",
       brand="Brand",
       category="General",
@@ -255,7 +249,6 @@ def test_t2_3_staleness_detection_on_external_jsonl_append(tmp_path):
           receipt_date="2026-01-10",
           account="default:checking",
           merchant="Shop",
-          description="Item",
           item="item",
           brand="Brand",
           category="General",
@@ -298,7 +291,6 @@ def test_t2_4_corrupted_or_deleted_cache_recovery(tmp_path):
       receipt_date="2026-01-10",
       account="default:checking",
       merchant="Shop",
-      description="Item",
       item="item",
       brand="Brand",
       category="General",
@@ -350,7 +342,6 @@ def test_t2_5_explicit_cache_rebuild(tmp_path):
       receipt_date="2026-01-10",
       account="default:checking",
       merchant="Shop",
-      description="Item",
       item="item",
       brand="Brand",
       category="General",
@@ -409,7 +400,6 @@ def test_t3_1_and_t3_2_csv_ingestion_and_idempotency(tmp_path):
   entries = list_entries(ledger_file)
   assert len(entries) == imported
   first = entries[0]
-  assert hasattr(first, "description")
   assert hasattr(first, "item")
   assert hasattr(first, "brand")
   assert hasattr(first, "pack_size")
@@ -430,11 +420,11 @@ def test_t3_3_partial_duplicate_csv(tmp_path):
   ledger_file = tmp_path / "test_ledger.jsonl"
   db = LedgerDatabase(ledger_file)
 
-  # Create a small CSV with 7 rows in 25-column schema
+  # Create a small CSV with 7 rows in 25-column Schema
   csv_file = tmp_path / "partial.csv"
-  header = "receipt_id,receipt_date,merchant,description,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,notes\n"
+  header = "receipt_id,receipt_date,merchant,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,availability,notes\n"
   rows = [
-      f"rec-{i:03d},2026-01-10,Merchant,Item {i},item {i},Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,\n"
+      f"rec-{i:03d},2026-01-10,Merchant,item {i},Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,in_stock,\n"
       for i in range(1, 8)
   ]
   csv_file.write_text(header + "".join(rows))
@@ -449,7 +439,6 @@ def test_t3_3_partial_duplicate_csv(tmp_path):
           receipt_date="2026-01-10",
           account="default:checking",
           merchant="Merchant",
-          description=f"Item {i}",
           item=f"item {i}",
           brand="Brand",
           category="Category",
@@ -470,6 +459,7 @@ def test_t3_3_partial_duplicate_csv(tmp_path):
           brand_rating=5.0,
           product_tier="A",
           product_rating=5.0,
+          availability="in_stock",
           notes="",
           recorded_at="2026-01-10T00:00:00+00:00",
       )
@@ -485,8 +475,8 @@ def test_t3_3_partial_duplicate_csv(tmp_path):
 def test_t3_4_force_ingestion(tmp_path):
   """T3.4: force=True overwrites existing records in SQLite without errors."""
   csv_file = tmp_path / "single.csv"
-  header = "receipt_id,receipt_date,merchant,description,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,notes\n"
-  row = "rec-001,2026-01-10,Merchant,Item,item,Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,\n"
+  header = "receipt_id,receipt_date,merchant,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,availability,notes\n"
+  row = "rec-001,2026-01-10,Merchant,item,Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,in_stock,\n"
   csv_file.write_text(header + row)
 
   ledger_file = tmp_path / "ledger.jsonl"
@@ -514,8 +504,8 @@ def test_t3_5_validation_failure_handling(tmp_path):
 def test_t3_6_custom_account_assignment(tmp_path):
   """T3.6: Assigns custom account identifier to imported entries."""
   csv_file = tmp_path / "account.csv"
-  header = "receipt_id,receipt_date,merchant,description,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,notes\n"
-  row = "rec-001,2026-01-10,Merchant,Item,item,Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,\n"
+  header = "receipt_id,receipt_date,merchant,item,brand,category,quantity,pack_size,unit,unit_price,currency,discount,fee,tax,deposit,paid_total,event_type,store_tier,store_rating,brand_tier,brand_rating,product_tier,product_rating,availability,notes\n"
+  row = "rec-001,2026-01-10,Merchant,item,Brand,Category,1,1,piece,10.00,MXN,0,0,0,0,-10.00,recurring,A,5.0,A,5.0,A,5.0,in_stock,\n"
   csv_file.write_text(header + row)
 
   ledger_file = tmp_path / "ledger.jsonl"
@@ -649,7 +639,8 @@ def test_suite_5_filterable_queries(tmp_path):
   assert income_entries[0].event_type == "income"
 
   # T5.5: Combined Conjunction Filtering
-  conj = list_entries(ledger_file, month="2026-01", category="Food", merchant="Market A", account="acc2")
+  conj = list_entries(ledger_file, month="2026-01",
+                      category="Food", merchant="Market A", account="acc2")
   assert len(conj) == 1
   assert conj[0].paid_total == -25.00
 
@@ -667,11 +658,16 @@ def test_suite_5_filterable_queries(tmp_path):
 def test_t6_1_and_t6_2_category_breakdown_precision_and_filtering(tmp_path):
   """T6.1 & T6.2: Excludes non-consumption (income, transfer) and percentages sum to 100.0%."""
   ledger_file = tmp_path / "ledger.jsonl"
-  add_entry(ledger_file, "2026-01-01", 3000.00, "income", "Employer", category="Salary")
-  add_entry(ledger_file, "2026-01-02", -500.00, "transfer", "Bank", category="Transfer")
-  add_entry(ledger_file, "2026-01-05", 100.00, "one_off", "Market", category="Food")
-  add_entry(ledger_file, "2026-01-10", 50.00, "recurring", "Bus", category="Transport")
-  add_entry(ledger_file, "2026-01-15", 50.00, "recurring", "Electric Co", category="Utilities")
+  add_entry(ledger_file, "2026-01-01", 3000.00,
+            "income", "Employer", category="Salary")
+  add_entry(ledger_file, "2026-01-02", -500.00,
+            "transfer", "Bank", category="Transfer")
+  add_entry(ledger_file, "2026-01-05", 100.00,
+            "one_off", "Market", category="Food")
+  add_entry(ledger_file, "2026-01-10", 50.00,
+            "recurring", "Bus", category="Transport")
+  add_entry(ledger_file, "2026-01-15", 50.00, "recurring",
+            "Electric Co", category="Utilities")
 
   breakdown = get_category_breakdown(ledger_file)
   assert len(breakdown) == 3
@@ -696,8 +692,10 @@ def test_t6_1_and_t6_2_category_breakdown_precision_and_filtering(tmp_path):
 def test_t6_3_month_specific_breakdown(tmp_path):
   """T6.3: Only aggregates spending for the selected month."""
   ledger_file = tmp_path / "ledger.jsonl"
-  add_entry(ledger_file, "2026-01-10", 40.00, "recurring", "Shop", category="Food")
-  add_entry(ledger_file, "2026-02-10", 80.00, "recurring", "Shop", category="Food")
+  add_entry(ledger_file, "2026-01-10", 40.00,
+            "recurring", "Shop", category="Food")
+  add_entry(ledger_file, "2026-02-10", 80.00,
+            "recurring", "Shop", category="Food")
 
   jan_breakdown = get_category_breakdown(ledger_file, month="2026-01")
   assert len(jan_breakdown) == 1
@@ -733,6 +731,10 @@ def test_t7_1_add_one_off_expense(tmp_path):
   assert entry.paid_total == -45.50
   assert entry.merchant == "Corner Cafe"
   assert entry.event_type == "one_off"
+  assert entry.item == "Transaction"
+  assert entry.unit_price == 45.50
+  assert entry.pack_size == 1.0
+  assert entry.month == "2026-03"
 
   # Persistence check
   entries = list_entries(ledger_file)
@@ -753,6 +755,7 @@ def test_t7_2_add_income_event(tmp_path):
   )
   assert entry.paid_total == 2500.00
   assert entry.category == "Income"
+  assert entry.month == "2026-03"
 
   entries = list_entries(ledger_file)
   assert len(entries) == 1
@@ -772,4 +775,65 @@ def test_t7_3_add_validation_invariants(tmp_path):
   with pytest.raises(ValueError, match="Invalid event_type"):
     add_entry(ledger_file, "2026-01-01", 10.0, "fake_event", "Shop")
 
+  with pytest.raises(ValueError, match="Invalid tier"):
+    add_entry(ledger_file, "2026-01-01", 10.0,
+              "recurring", "Shop", store_tier="Z")
+
+  with pytest.raises(ValueError, match="Invalid rating"):
+    add_entry(ledger_file, "2026-01-01", 10.0,
+              "recurring", "Shop", store_rating=0.5)
+
+  with pytest.raises(ValueError, match="Invalid rating"):
+    add_entry(ledger_file, "2026-01-01", 10.0,
+              "recurring", "Shop", store_rating=5.5)
+
   assert not ledger_file.exists()
+
+
+def test_t7_4_add_entry_schema_parameters(tmp_path):
+  """T7.4: add_entry accepts brand, pack_size, unit_price, tiers, and ratings."""
+  ledger_file = tmp_path / "ledger.jsonl"
+  entry = add_entry(
+      ledger_file,
+      receipt_date="2026-03-10",
+      amount=100.00,
+      event_type="one_off",
+      merchant="Super Store",
+      category="Groceries",
+      item="cereal",
+      brand="BrandX",
+      pack_size=2.0,
+      unit="pack",
+      quantity=2.0,
+      unit_price=50.00,
+      store_tier="B",
+      store_rating=4.5,
+      brand_tier="C",
+      brand_rating=4.0,
+      product_tier="A",
+      product_rating=5.0,
+  )
+  assert entry.item == "cereal"
+  assert entry.brand == "BrandX"
+  assert entry.pack_size == 2.0
+  assert entry.unit_price == 50.00
+  assert entry.store_tier == "B"
+  assert entry.store_rating == 4.5
+  assert entry.brand_tier == "C"
+  assert entry.brand_rating == 4.0
+  assert entry.product_tier == "A"
+  assert entry.product_rating == 5.0
+  assert entry.month == "2026-03"
+
+  loaded = list_entries(ledger_file)[0]
+  assert loaded.item == "cereal"
+  assert loaded.brand == "BrandX"
+  assert loaded.pack_size == 2.0
+  assert loaded.unit_price == 50.00
+  assert loaded.store_tier == "B"
+  assert loaded.store_rating == 4.5
+  assert loaded.brand_tier == "C"
+  assert loaded.brand_rating == 4.0
+  assert loaded.product_tier == "A"
+  assert loaded.product_rating == 5.0
+  assert loaded.month == "2026-03"

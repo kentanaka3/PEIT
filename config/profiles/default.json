@@ -23,9 +23,7 @@
         30
       ],
       "event_type": "income",
-      "volatility": 0.005,
-      "tier": "A",
-      "rating": 5.0
+      "volatility": 0.005
     }
   ],
   "basket": [

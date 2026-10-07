@@ -11,14 +11,6 @@ status → map → context → entry points → plan → small edit → focused 
   └────────────── report evidence, uncertainty, and review ───┘
 ```
 
-Use `LLM/README.md` and the repository handler as navigation aids:
-
-```bash
-git status --short
-bash LLM/scripts/handler.sh navigate --root "$PWD" --scripts
-bash LLM/scripts/handler.sh validate --root "$PWD"
-```
-
 Do not overwrite existing work. Do not run operational initialization,
 downloads, inference, package installation, or cluster jobs without explicit
 approval. Prefer repository-relative paths and focused tests or dry runs.
