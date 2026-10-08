@@ -24,7 +24,8 @@ doc/
 │   └── mobile.md                           # Flutter client manual, capture initiation & review workflows
 │
 ├── specs/                                  # Formal specifications, RFCs, and decision records
-│   └── RFC-001_personal_welfare_metrics.md # Specification for personal welfare & inflation metric algorithms
+│   ├── RFC-001_personal_welfare_metrics.md # Specification for personal welfare & inflation metric algorithms
+│   └── RFC-003_web_ui_ux_integration.md    # Specification for Web UI/UX, Flutter embedding & extensions
 │
 ├── showcase/                               # Academic showcase, conference drafts, and slides
 │   ├── peit.tex                            # LaTeX conference paper / demonstrator source
@@ -55,6 +56,7 @@ doc/
 
 ### 2.3 Specifications & Decisions
 - **[RFC-001: Personal Welfare & Inflation Metrics](specs/RFC-001_personal_welfare_metrics.md)**: Formal RFC specifying future decomposition metrics (Bennett indicators, Apparent Disposable Income gap, and substitution curves).
+- **[RFC-003: Web UI/UX Integration Architecture](specs/RFC-003_web_ui_ux_integration.md)**: Production specification for the Web Workbench micro-shell (`web/`), embedded Flutter Element Embedding islands (`<peit-flutter-island>`), and VS Code-style extension framework (`web/extensions/`).
 
 ### 2.4 Academic & Demonstrations
 - **[PEIT Showcase Document (`peit.tex`)](showcase/peit.tex)**: Academic paper summarizing the system, data provenance, and empirical evaluation.

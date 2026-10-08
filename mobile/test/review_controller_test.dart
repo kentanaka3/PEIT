@@ -111,7 +111,7 @@ void main() {
           brand: 'FUD',
           category: 'Food and beverages',
           quantity: 1.0,
-          pack_size: 1.0,
+          packSize: 1.0,
           unit: 'ea',
           unitPrice: 58.00,
           totalPrice: 58.00,

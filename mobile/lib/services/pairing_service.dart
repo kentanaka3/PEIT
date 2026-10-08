@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:http/http.dart' as http;
 
 import 'pairing_crypto.dart';
 import 'secure_storage_service.dart';
+import 'sync_service.dart';
 
 /// Exception thrown when PIN proof fails during pairing confirmation (HTTP 401).
 class InvalidPinException implements Exception {
@@ -169,7 +171,7 @@ class PairingService {
       // Certificate pinning callback
       ioClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
         // If fingerprint matches, accept the self-signed certificate
-        final sha256Bytes = cert.sha256;
+        final sha256Bytes = sha256.convert(cert.der).bytes;
         final hexList = sha256Bytes.map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase()).toList();
         final certFingerprint = hexList.join(':');
 

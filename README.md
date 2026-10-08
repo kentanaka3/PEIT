@@ -155,20 +155,24 @@ peit --ledger data/ledger.jsonl --breakdown [--month YYYY-MM] [--account <accoun
 peit --ledger data/ledger.jsonl --rebuild-cache
 ```
 
-### 5. Desktop Synchronization Daemon (`--serve`)
+### 5. Desktop Synchronization Daemon & Web Workbench (`--serve`)
 ```bash
-# Launch the local HTTP REST daemon for mobile synchronization
+# Launch the local HTTP daemon and serve the Web Workbench
 peit --serve --host 127.0.0.1 --port 8000
 
-# Specify an alternate ledger path
+# Specify an alternate ledger path and listen on all interfaces
 peit --ledger data/my_ledger.jsonl --serve --host 0.0.0.0 --port 8080
 ```
-Provides a zero-dependency, local-first REST API (`http.server.ThreadingHTTPServer`) for mobile app integration and multi-device receipt synchronization:
-- `GET /api/v1/health`: Server status, schema column count (25), and total entry count.
-- `GET /api/v1/summary`: Real-time balance rollups and category breakdowns.
-- `GET /api/v1/entries`: Paginated transaction list with query filters (`month`, `account`, `category`, `merchant`, `limit`, `offset`).
-- `POST /api/v1/sync/push`: Idempotent batch transaction ingestion with strict 25-column schema validation, SHA-256 deduplication, and DoS payload guards (`HTTP 413` at 10 MB limit).
-- `OPTIONS *`: CORS preflight support for local browser and web views.
+Provides a zero-dependency, local-first REST API and static web server (`http.server.ThreadingHTTPServer`) for the browser workbench and mobile app synchronization:
+- **Web UI/UX Workbench (`web/`)**: High-density Vanilla Modern Web micro-shell featuring real-time KPI cards, interactive 25-column Data Grid, and dynamic Material 3 theming.
+- **Embedded Mobile Islands (`<peit-flutter-island>`)**: Runs Flutter Web review components (`mobile/lib/screens/`) directly in the DOM via `flutter.js` Element Embedding with bidirectional event bus.
+- **VS Code-Style Extension Framework (`web/extensions/`)**: Extensible runtime (`PeitExtensionHost`) loading plugins from declarative manifests (`peit-crypto-cpi`, `peit-carbon-footprint`).
+- **REST Endpoints**:
+  - `GET /api/v1/health`: Server status, schema column count (25), and total entry count.
+  - `GET /api/v1/summary`: Real-time balance rollups and category breakdowns.
+  - `GET /api/v1/entries`: Paginated transaction list with query filters (`month`, `account`, `category`, `merchant`, `limit`, `offset`).
+  - `POST /api/v1/sync/push`: Idempotent batch transaction ingestion with strict 25-column schema validation, SHA-256 deduplication, and DoS payload guards (`HTTP 413` at 10 MB limit).
+  - `OPTIONS *`: CORS preflight support for local browser and web views.
 
 ### 6. Interactive Multi-Graph Visualizer Dashboard (`--dashboard` / `--html`)
 ```bash
@@ -187,7 +191,7 @@ The dashboard renders a self-contained, offline-first 3-tab layout:
 - **Tab 2: Inflation & Welfare Analytics**: Personal MoM inflation vs. National CPI divergence, Bennett additive expenditure growth decomposition ($\Delta E = \Delta E_{\text{price}} + \Delta E_{\text{quantity}}$), and Category Percentage-Point Contributions (PPC) and Absolute Dollar Impact (ADI).
 - **Tab 3: Transaction Ledger**: Real-time client-side searchable and sortable data grid with full transaction provenance.
 
-*Note*: HTML reports are strictly generated on-demand via `--html` or `--dashboard` and are never produced unrequested during ingestion. Full visualizer details are documented in [`doc/dashboard.md`](doc/dashboard.md).
+*Note*: HTML reports are strictly generated on-demand via `--html` or `--dashboard` and are never produced unrequested during ingestion. Full visualizer details are documented in [`doc/subsystems/dashboard.md`](doc/subsystems/dashboard.md).
 
 ## Profile × Market Simulation Engine (`peit.profiler`)
 
@@ -221,24 +225,26 @@ python -m peit.profiler generate \
 
 ## Testing & Quality Assurance
 
-PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` across 11 project suites (`schema`, `core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`):
+PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` executing **192 tests across 13 project suites** (`schema`, `core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`, `security`, `web`):
 
 ```bash
-# Run all tests
+# Run all tests (192 tests across 13 suites)
 bash test/run_tests.sh --all
 
 # Run specific test suites
-bash test/run_tests.sh --suite schema        # Canonical SSOT, cross-platform parity & hash invariants
-bash test/run_tests.sh --suite ocr_benchmark # Real receipt benchmark suite (CER, WER, F1)
-bash test/run_tests.sh --suite ocr_canvas    # Synthetic thermal receipt canvas & distortions
-bash test/run_tests.sh --suite ocr           # Heuristic receipt parser & 25-column conversion
-bash test/run_tests.sh --suite mobile        # Mobile client sync payload & hash parity
-bash test/run_tests.sh --suite server        # Desktop synchronization daemon & REST API
-bash test/run_tests.sh --suite profiler      # Profile generator, market dynamics & CLI
-bash test/run_tests.sh --suite ledger        # Signed ledger, SQLite cache, balances & filters
-bash test/run_tests.sh --suite dashboard     # Multi-graph dashboard visualizer & KPI metrics
-bash test/run_tests.sh --suite cli           # Command-line interface parsing & commands
-bash test/run_tests.sh --suite core          # Core Schema validation & index algorithms
+bash test/run_tests.sh --suite schema        # Canonical SSOT, cross-platform parity & hash invariants (22 tests)
+bash test/run_tests.sh --suite profiler      # Profile generator, market dynamics & CLI (40 tests)
+bash test/run_tests.sh --suite ledger        # Signed ledger, SQLite cache, balances & filters (26 tests)
+bash test/run_tests.sh --suite cli           # Command-line interface parsing & commands (14 tests)
+bash test/run_tests.sh --suite dashboard     # Multi-graph dashboard visualizer & KPI metrics (14 tests)
+bash test/run_tests.sh --suite security      # LAN pairing handshake, auth registry & TLS pinning (14 tests)
+bash test/run_tests.sh --suite web           # Web workbench micro-shell & static asset delivery (14 tests)
+bash test/run_tests.sh --suite server        # Desktop synchronization daemon & REST API (11 tests)
+bash test/run_tests.sh --suite core          # Core Schema validation & index algorithms (10 tests)
+bash test/run_tests.sh --suite ocr           # Heuristic receipt parser & 25-column conversion (9 tests)
+bash test/run_tests.sh --suite ocr_canvas    # Synthetic thermal receipt canvas & distortions (7 tests)
+bash test/run_tests.sh --suite ocr_benchmark # Real receipt benchmark suite (CER, WER, F1) (6 tests)
+bash test/run_tests.sh --suite mobile        # Mobile client sync payload & hash parity (5 tests)
 
 # List all test suites, test files, and test counts
 bash test/run_tests.sh --list
@@ -247,7 +253,7 @@ bash test/run_tests.sh --list
 bash test/run_tests.sh -k "deterministic"
 bash test/run_tests.sh -k "balance"
 bash test/run_tests.sh -k "sync"
-bash test/run_tests.sh -k "ocr"
+bash test/run_tests.sh -k "island"
 ```
 
 ## Documentation & Architecture
@@ -266,4 +272,5 @@ Comprehensive technical guides, specifications, and architecture decision record
 - **Specifications & Showcase**:
   - [`config/receipt_schema.csv`](config/receipt_schema.csv): Authoritative 25-column receipt specification and data dictionary.
   - [`doc/specs/RFC-001_personal_welfare_metrics.md`](doc/specs/RFC-001_personal_welfare_metrics.md): Personal Welfare & Inflation Metric Specification (RFC).
+  - [`doc/specs/RFC-003_web_ui_ux_integration.md`](doc/specs/RFC-003_web_ui_ux_integration.md): Web UI/UX Workbench, Flutter Element Embedding & Extensions (RFC).
   - [`doc/showcase/peit.tex`](doc/showcase/peit.tex): Academic conference paper / thesis LaTeX source.

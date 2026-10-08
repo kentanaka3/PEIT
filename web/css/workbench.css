@@ -1,0 +1,284 @@
+/* VS Code / Bloomberg Terminal Style Workbench Layout */
+#app-workbench {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--md-sys-color-background);
+}
+
+/* Top App Header / Bar */
+#workbench-header {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  background-color: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+  z-index: 10;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.8px;
+  color: var(--md-sys-color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: var(--md-sys-color-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.theme-toggle-btn:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+/* Informative Connection & Fallback Alert Banner */
+.workbench-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: rgba(248, 113, 113, 0.15);
+  border-bottom: 1px solid var(--peit-color-expense);
+  color: #fca5a5;
+  font-size: 12px;
+  line-height: 1.4;
+  z-index: 9;
+}
+
+.workbench-banner.banner-warning {
+  background-color: var(--peit-color-rate-badge-container);
+  border-bottom: 1px solid var(--peit-color-rate-badge);
+  color: var(--peit-color-rate-badge);
+}
+
+.workbench-banner.banner-info {
+  background-color: var(--peit-color-transfer-container);
+  border-bottom: 1px solid var(--peit-color-transfer);
+  color: var(--md-sys-color-primary);
+}
+
+.workbench-banner .banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workbench-banner .banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid currentColor;
+  color: inherit;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.banner-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Middle Body: Activity Bar + Sidebar + Editor Main Content */
+#workbench-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Activity Bar (VS Code style thin icon bar) */
+#activity-bar {
+  width: var(--activity-bar-width);
+  min-width: var(--activity-bar-width);
+  background-color: var(--md-sys-color-surface-container-high);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+  user-select: none;
+}
+
+.activity-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--md-sys-color-outline);
+  background: transparent;
+  border: none;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+}
+
+.activity-item:hover {
+  color: var(--md-sys-color-on-surface);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.activity-item.active {
+  color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.activity-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.activity-item svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Sidebar (Collapsible Context Panel) */
+#sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background-color: var(--md-sys-color-surface);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--md-sys-color-outline);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-section {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 4px;
+}
+
+/* Main Content Area */
+#main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--md-sys-color-background);
+  overflow: hidden;
+}
+
+.main-view-container {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#view-dashboard,
+#view-ledger {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Bottom Status Bar */
+#status-bar {
+  height: var(--status-bar-height);
+  min-height: var(--status-bar-height);
+  background-color: var(--md-sys-color-surface-container);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  user-select: none;
+  z-index: 10;
+}
+
+.status-left, .status-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+

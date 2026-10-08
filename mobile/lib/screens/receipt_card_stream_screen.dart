@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../controllers/receipt_review_controller.dart';
 import '../data/database.dart';
+import '../web_interop.dart';
 import 'receipt_data_grid_screen.dart';
 
 class ReceiptCardStreamScreen extends StatefulWidget {
@@ -52,13 +53,25 @@ class _ReceiptCardStreamScreenState extends State<ReceiptCardStreamScreen> {
   Future<void> _commitAndFinish() async {
     final count = await widget.controller.commitToDatabase(widget.database);
     if (!mounted) return;
+
+    // Web Interop notification if running inside an embedded web island
+    try {
+      WebInteropService().notifyEntryCommitted({
+        'receipt_id': widget.controller.receiptId,
+        'count': count,
+        'merchant': widget.controller.merchant,
+      });
+    } catch (_) {}
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Successfully committed $count items to PEIT SQLite ledger!'),
         backgroundColor: Colors.green.shade700,
       ),
     );
-    Navigator.of(context).pop(true);
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override

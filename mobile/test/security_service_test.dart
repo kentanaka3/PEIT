@@ -333,9 +333,13 @@ void main() {
         receiptDate: '2026-03-10',
         merchant: 'Store A',
         item: 'coffee',
+        category: 'Food',
+        unit: 'ea',
+        currency: 'MXN',
         quantity: 1,
         unitPrice: 5.0,
         paidTotal: -5.0,
+        eventType: 'one_off',
       );
       db.insertEntry(entry);
 

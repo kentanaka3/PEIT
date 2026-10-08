@@ -52,7 +52,7 @@ An exhaustive review of the existing codebase (`src/peit/`, `mobile/`, `config/`
 
 ```
 ========================================================================================
-CURRENT ARCHITECTURAL AUDIT: 164 Python Tests Passing, 4 Dart Test Suites Passing
+CURRENT ARCHITECTURAL AUDIT: 192 Python Tests Passing across 13 Suites, 4 Dart Test Suites Passing
 ========================================================================================
 ```
 

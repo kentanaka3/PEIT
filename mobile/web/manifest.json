@@ -1,0 +1,24 @@
+{
+  "name": "PEIT Mobile Island",
+  "short_name": "PEIT Mobile",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1E88E5",
+  "description": "Privacy-first offline personal expenditure and inflation tracker mobile island.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

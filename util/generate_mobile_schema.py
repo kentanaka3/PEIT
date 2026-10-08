@@ -104,6 +104,7 @@ library peit_schema_constants;
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart' show sha256;
+import 'schema_constants.dart' as _root;
 
 /// Schema version
 const int schemaVersion = {SCHEMA_VERSION};
@@ -211,15 +212,15 @@ double normalizeDiscountSign(num amount) => amount.abs().toDouble();
 
 /// Backward compatibility class aliasing lists, sets, and functions for existing code.
 class PeitSchemaConstants {{
-  static const int schemaVersion = peit_schema_constants.schemaVersion;
+  static const int schemaVersion = _root.schemaVersion;
 
-  static const List<String> requiredColumns = receiptColumns;
-  static const List<String> receiptColumns = peit_schema_constants.receiptColumns;
+  static const List<String> requiredColumns = _root.receiptColumns;
+  static const List<String> receiptColumns = _root.receiptColumns;
   static const List<String> ledgerEnvelopeColumns =
-      peit_schema_constants.ledgerEnvelopeColumns;
-  static const List<String> ledgerColumns = peit_schema_constants.ledgerColumns;
+      _root.ledgerEnvelopeColumns;
+  static const List<String> ledgerColumns = _root.ledgerColumns;
   static const List<String> mobileSyncColumns =
-      peit_schema_constants.mobileSyncColumns;
+      _root.mobileSyncColumns;
 
   static const Set<String> eventTypes = {{
 {event_types_formatted}
@@ -232,10 +233,10 @@ class PeitSchemaConstants {{
   static const Set<String> validTiers = {{{valid_tiers_formatted}}};
 
   static const Set<String> recognizedCurrencies =
-      peit_schema_constants.recognizedCurrencies;
+      _root.recognizedCurrencies;
 
-  static const double minRating = peit_schema_constants.minRating;
-  static const double maxRating = peit_schema_constants.maxRating;
+  static const double minRating = _root.minRating;
+  static const double maxRating = _root.maxRating;
 
   static String computeEntryId({{
     required String receiptId,
@@ -243,7 +244,7 @@ class PeitSchemaConstants {{
     required Object paidTotal,
     required String receiptDate,
   }}) =>
-      peit_schema_constants.computeEntryId(
+      _root.computeEntryId(
         receiptId: receiptId,
         item: item,
         paidTotal: paidTotal,
@@ -251,16 +252,16 @@ class PeitSchemaConstants {{
       );
 
   static double normalizeExpenseSign(num amount) =>
-      peit_schema_constants.normalizeExpenseSign(amount);
+      _root.normalizeExpenseSign(amount);
 
   static double normalizeIncomeSign(num amount) =>
-      peit_schema_constants.normalizeIncomeSign(amount);
+      _root.normalizeIncomeSign(amount);
 
   static double normalizeSurchargeSign(num amount) =>
-      peit_schema_constants.normalizeSurchargeSign(amount);
+      _root.normalizeSurchargeSign(amount);
 
   static double normalizeDiscountSign(num amount) =>
-      peit_schema_constants.normalizeDiscountSign(amount);
+      _root.normalizeDiscountSign(amount);
 }}
 
 """

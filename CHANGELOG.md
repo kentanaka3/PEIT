@@ -8,6 +8,22 @@ of production compatibility.
 
 ### Added
 
+- **Web UI/UX Workbench Integration (RFC-003, `web/`, `mobile/web/`, `src/peit/server.py`)**:
+  - **Phase 1: Hybrid Foundation & Static Web Serving**:
+    - Integrated zero-dependency static web file serving directly within `src/peit/server.py` (`peit --serve`).
+    - Implemented Vanilla Modern Web micro-shell (`web/index.html`, `web/css/`, `web/js/`) featuring high-density Material 3 financial terminal layout, real-time KPI cards (`web/js/components/kpi_cards.js`), status bar (`web/js/components/status_bar.js`), and virtualized 25-column data grid (`web/js/components/data_grid.js`).
+    - Built reactive state management store (`web/js/store.js`) backed by REST API polling (`/api/v1/health`, `/api/v1/summary`, `/api/v1/entries`) with resilient offline synthetic data fallbacks.
+  - **Phase 2: Mobile Island Integration**:
+    - Implemented Flutter Element Embedding island (`<peit-flutter-island>`, `web/js/islands/flutter_island.js`) embedding Flutter Web review components (`mobile/lib/screens/receipt_card_stream_screen.dart`, `mobile/web/`) into the host DOM via `flutter.js`.
+    - Established bidirectional JS/Dart event bus (`peit:flutter-action`, `peit:flutter-ready`) for host-to-island coordination.
+    - Added diagnostic fallback card states when Flutter Web WASM/JS engine assets are not compiled.
+  - **Phase 3: VS Code-Style Extension Framework**:
+    - Implemented client-side extension host runtime (`web/js/extensions/extension_host.js`, `PeitExtensionHost`) loading plugins from declarative manifests (`web/extensions/manifest_registry.json`).
+    - Shipped reference extensions: `peit-crypto-cpi` (crypto-denominated inflation adjustments) and `peit-carbon-footprint` (COICOP-weighted carbon footprint estimator).
+  - **Automated Test Coverage**:
+    - Added `test/test_web_server.py` with 14 unit and integration tests covering MIME types, directory traversals, index fallbacks, and REST proxying.
+    - Expanded test harness to **192 tests across 13 suites** (`schema` [22], `core` [10], `ledger` [26], `cli` [14], `dashboard` [14], `profiler` [40], `server` [11], `mobile` [5], `ocr` [9], `ocr_canvas` [7], `ocr_benchmark` [6], `security` [14], `web` [14]).
+
 - **Single Source of Truth (SSOT) Architecture Restructuring (`src/peit/schema.py`, `mobile/lib/data/schema_constants.dart`, `util/generate_mobile_schema.py`)**:
   - Implemented canonical Python SSOT module (`src/peit/schema.py`) using strictly Python standard library:
     - Mastered 25-column receipt schema (`RECEIPT_COLUMNS`), 4-column ledger envelope (`LEDGER_ENVELOPE_COLUMNS`), 29-column SQLite projection sequence (`LEDGER_COLUMNS`), and 2-column mobile sync envelope (`MOBILE_SYNC_COLUMNS`).

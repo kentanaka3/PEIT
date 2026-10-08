@@ -286,7 +286,7 @@ class ReceiptReviewController extends ChangeNotifier {
       brand: 'Adjustment',
       category: 'General',
       quantity: 1.0,
-      pack_size: 1.0,
+      packSize: 1.0,
       unit: 'ea',
       unitPrice: double.parse(delta.toStringAsFixed(2)),
       totalPrice: double.parse(delta.toStringAsFixed(2)),

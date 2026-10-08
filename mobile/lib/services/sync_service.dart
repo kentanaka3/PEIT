@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:uuid/uuid.dart';
@@ -134,7 +135,7 @@ class SyncService {
     try {
       final innerClient = HttpClient();
       innerClient.badCertificateCallback = (X509Certificate cert, String host, int port) {
-        final certFp = cert.sha256
+        final certFp = sha256.convert(cert.der).bytes
             .map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase())
             .join(':');
         return certFp == expectedFingerprint.trim().toUpperCase();

@@ -1,0 +1,116 @@
+:root {
+  /* Material 3 Dark Palette (Default - Financial Terminal) */
+  --md-sys-color-background: #0f141c;
+  --md-sys-color-on-background: #e1e2ec;
+  --md-sys-color-surface: #131822;
+  --md-sys-color-on-surface: #e1e2ec;
+  --md-sys-color-surface-variant: #1a2130;
+  --md-sys-color-on-surface-variant: #c3c6d6;
+  --md-sys-color-surface-container: #171d2b;
+  --md-sys-color-surface-container-high: #21293a;
+  --md-sys-color-surface-container-highest: #2b3449;
+
+  --md-sys-color-primary: #82b1ff;
+  --md-sys-color-on-primary: #002d6c;
+  --md-sys-color-primary-container: #19448e;
+  --md-sys-color-on-primary-container: #d6e3ff;
+
+  --md-sys-color-secondary: #bec6dc;
+  --md-sys-color-on-secondary: #283042;
+  --md-sys-color-secondary-container: #3e4759;
+  --md-sys-color-on-secondary-container: #dae2f9;
+
+  --md-sys-color-outline: #8d919f;
+  --md-sys-color-outline-variant: #434753;
+
+  /* Financial Semantics */
+  --peit-color-income: #4ade80;
+  --peit-color-income-container: rgba(74, 222, 128, 0.12);
+  --peit-color-expense: #f87171;
+  --peit-color-expense-container: rgba(248, 113, 113, 0.12);
+  --peit-color-transfer: #60a5fa;
+  --peit-color-transfer-container: rgba(96, 165, 250, 0.12);
+  --peit-color-rate-badge: #fbbf24;
+  --peit-color-rate-badge-container: rgba(251, 191, 36, 0.15);
+
+  /* Elevation Shadows */
+  --md-sys-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --md-sys-elevation-2: 0 3px 6px rgba(0, 0, 0, 0.45);
+  --md-sys-elevation-3: 0 6px 12px rgba(0, 0, 0, 0.55);
+
+  /* Typography */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-family-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Layout Constants */
+  --activity-bar-width: 52px;
+  --sidebar-width: 280px;
+  --status-bar-height: 26px;
+  --header-height: 44px;
+}
+
+[data-theme="light"] {
+  /* Material 3 Light Palette */
+  --md-sys-color-background: #f7f9fe;
+  --md-sys-color-on-background: #191c20;
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-on-surface: #191c20;
+  --md-sys-color-surface-variant: #e1e3eb;
+  --md-sys-color-on-surface-variant: #43474f;
+  --md-sys-color-surface-container: #edf0f8;
+  --md-sys-color-surface-container-high: #e2e6f0;
+  --md-sys-color-surface-container-highest: #d7dce8;
+
+  --md-sys-color-primary: #1565c0;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #d6e3ff;
+  --md-sys-color-on-primary-container: #001b3f;
+
+  --md-sys-color-secondary: #565f71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #dae2f9;
+  --md-sys-color-on-secondary-container: #131c2b;
+
+  --md-sys-color-outline: #747781;
+  --md-sys-color-outline-variant: #c4c7d0;
+
+  /* Financial Semantics in Light Mode */
+  --peit-color-income: #15803d;
+  --peit-color-income-container: rgba(21, 128, 61, 0.12);
+  --peit-color-expense: #b91c1c;
+  --peit-color-expense-container: rgba(185, 28, 28, 0.12);
+  --peit-color-transfer: #2563eb;
+  --peit-color-transfer-container: rgba(37, 99, 235, 0.12);
+  --peit-color-rate-badge: #b45309;
+  --peit-color-rate-badge-container: rgba(180, 83, 9, 0.15);
+
+  --md-sys-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --md-sys-elevation-2: 0 3px 6px rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-3: 0 6px 12px rgba(0, 0, 0, 0.16);
+}
+
+/* Base Document Reset & Typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mono {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+

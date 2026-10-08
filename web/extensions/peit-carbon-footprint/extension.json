@@ -1,0 +1,28 @@
+{
+  "id": "peit-carbon-footprint",
+  "name": "ESG & Carbon Footprint Estimator",
+  "version": "0.1.0",
+  "description": "Calculates estimated environmental impact and CO2e emissions from transaction categories and merchant types.",
+  "contributes": {
+    "activityBar": {
+      "id": "carbon-footprint",
+      "title": "Eco / ESG",
+      "icon": "<svg viewBox=\"0 0 24 24\"><path d=\"M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 12 21a10 10 0 0 0 10-10c0-4.42-3.58-8-8-8-1.85 0-3.55.63-4.9 1.69L11.5 7.1A7.95 7.95 0 0 1 14 6c3.31 0 6 2.69 6 6 0 2.97-2.16 5.43-5 5.91V14h-2v4.06c-.33-.04-.66-.1-1-.18A7.51 7.51 0 0 1 6.3 16C7.9 12.1 10.7 8.5 17 8z\"/></svg>"
+    },
+    "views": [
+      {
+        "id": "carbon-footprint",
+        "title": "Carbon Footprint & Eco Impact",
+        "component": "carbon-footprint-view"
+      }
+    ],
+    "statusBar": [
+      {
+        "id": "carbon-footprint-stat",
+        "text": "ESG: Calculating...",
+        "tooltip": "Aggregate CO2e impact based on transaction categories"
+      }
+    ]
+  }
+}
+

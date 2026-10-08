@@ -7,7 +7,7 @@ import '../lib/services/econometric_engine.dart';
 void main() {
   group('EconometricEngine Pure Dart Unit Tests', () {
     test('single-month base data yields fixedBasketIndex = 100.0 and momPercent = null', () {
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'r1',
           receiptDate: '2026-01-10',
@@ -19,6 +19,7 @@ void main() {
           unitPrice: 20.0,
           paidTotal: -40.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r2',
@@ -31,6 +32,7 @@ void main() {
           unitPrice: 30.0,
           paidTotal: -30.0,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
       ];
 
@@ -54,7 +56,7 @@ void main() {
       // result[1]["fixed_basket_index"] == 150.0
       // result[1]["changing_basket_expenditure_index"] == 300.0
       // result[1]["mom_percent"] == 50.0
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'r1',
           receiptDate: '2026-01-15',
@@ -66,6 +68,7 @@ void main() {
           unitPrice: 2.0,
           paidTotal: -2.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r2',
@@ -78,6 +81,7 @@ void main() {
           unitPrice: 3.0,
           paidTotal: -6.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
       ];
 
@@ -104,7 +108,7 @@ void main() {
       // Month 2:
       // 1 unit of milk @ 33.00 ->
       // price index should be 100 * (33.00 / 22.00) = 150.0
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'r1',
           receiptDate: '2026-01-05',
@@ -116,6 +120,7 @@ void main() {
           unitPrice: 20.0,
           paidTotal: -40.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r2',
@@ -128,6 +133,7 @@ void main() {
           unitPrice: 26.0,
           paidTotal: -26.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r3',
@@ -140,6 +146,7 @@ void main() {
           unitPrice: 33.0,
           paidTotal: -33.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
       ];
 
@@ -152,7 +159,7 @@ void main() {
     });
 
     test('strictly excludes non-consumption entries (income, transfer, refund)', () {
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         // Base month consumption
         ReceiptEntryModel.create(
           receiptId: 'r1',
@@ -165,6 +172,7 @@ void main() {
           unitPrice: 10.0,
           paidTotal: -10.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         // Non-consumption transactions in Base month
         ReceiptEntryModel.create(
@@ -178,6 +186,7 @@ void main() {
           unitPrice: 5000.0,
           paidTotal: 5000.0,
           eventType: 'income',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r3',
@@ -190,6 +199,7 @@ void main() {
           unitPrice: 1000.0,
           paidTotal: -1000.0,
           eventType: 'transfer',
+          currency: 'MXN',
         ),
         // Month 2 consumption
         ReceiptEntryModel.create(
@@ -203,6 +213,7 @@ void main() {
           unitPrice: 12.0,
           paidTotal: -12.0,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r5',
@@ -215,6 +226,7 @@ void main() {
           unitPrice: 50.0,
           paidTotal: 50.0,
           eventType: 'refund',
+          currency: 'MXN',
         ),
       ];
 
@@ -246,7 +258,7 @@ void main() {
     });
 
     test('getMonthlyCashFlowKpis computes income, expenditure, transfers, refunds, and net balance', () async {
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'rec-1',
           receiptDate: '2026-03-01',
@@ -258,6 +270,7 @@ void main() {
           unitPrice: 3000.0,
           paidTotal: 3000.0,
           eventType: 'income',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'rec-2',
@@ -270,6 +283,7 @@ void main() {
           unitPrice: 1200.0,
           paidTotal: -1200.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'rec-3',
@@ -282,6 +296,7 @@ void main() {
           unitPrice: 350.0,
           paidTotal: -350.0,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'rec-4',
@@ -294,6 +309,7 @@ void main() {
           unitPrice: 500.0,
           paidTotal: -500.0,
           eventType: 'transfer',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'rec-5',
@@ -306,6 +322,7 @@ void main() {
           unitPrice: 50.0,
           paidTotal: 50.0,
           eventType: 'refund',
+          currency: 'MXN',
         ),
         // February entry to test month filtering
         ReceiptEntryModel.create(
@@ -319,6 +336,7 @@ void main() {
           unitPrice: 5.0,
           paidTotal: -5.0,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
       ];
 
@@ -342,7 +360,7 @@ void main() {
     });
 
     test('getCategoryBreakdown groups consumption entries and reconciles percentages', () async {
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'r1',
           receiptDate: '2026-03-01',
@@ -354,6 +372,7 @@ void main() {
           unitPrice: 60.0,
           paidTotal: -60.0,
           eventType: 'recurring',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r2',
@@ -366,6 +385,7 @@ void main() {
           unitPrice: 40.0,
           paidTotal: -40.0,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         // Income should be excluded
         ReceiptEntryModel.create(
@@ -379,6 +399,7 @@ void main() {
           unitPrice: 500.0,
           paidTotal: 500.0,
           eventType: 'income',
+          currency: 'MXN',
         ),
       ];
 
@@ -398,7 +419,7 @@ void main() {
     });
 
     test('getHistoricalMonths returns sorted unique YYYY-MM strings', () async {
-      final entries = [
+      final List<ReceiptEntryModel> entries = [
         ReceiptEntryModel.create(
           receiptId: 'r1',
           receiptDate: '2026-03-15',
@@ -410,6 +431,7 @@ void main() {
           unitPrice: 10,
           paidTotal: -10,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r2',
@@ -422,6 +444,7 @@ void main() {
           unitPrice: 10,
           paidTotal: -10,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r3',
@@ -434,6 +457,7 @@ void main() {
           unitPrice: 10,
           paidTotal: -10,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
         ReceiptEntryModel.create(
           receiptId: 'r4',
@@ -446,6 +470,7 @@ void main() {
           unitPrice: 10,
           paidTotal: -10,
           eventType: 'one_off',
+          currency: 'MXN',
         ),
       ];
 

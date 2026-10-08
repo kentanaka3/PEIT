@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "id": "peit-crypto-cpi",
+      "name": "Crypto CPI Tracker",
+      "version": "0.1.0",
+      "entry": "peit-crypto-cpi/index.js",
+      "manifest": "peit-crypto-cpi/extension.json",
+      "enabled": true
+    },
+    {
+      "id": "peit-carbon-footprint",
+      "name": "ESG & Carbon Footprint Estimator",
+      "version": "0.1.0",
+      "entry": "peit-carbon-footprint/index.js",
+      "manifest": "peit-carbon-footprint/extension.json",
+      "enabled": true
+    }
+  ]
+}
+

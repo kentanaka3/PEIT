@@ -62,7 +62,7 @@ ${C_BOLD}DESCRIPTION${C_RESET}
     Automatically configures PYTHONPATH and reports execution timing.
 
 ${C_BOLD}SUITES${C_RESET}
-    all           Run all test suites (schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security) [default]
+    all           Run all test suites (schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security, web) [default]
     schema        Run canonical SSOT schema and contract tests (test/test_schema.py)
     core          Run core price index and schema tests (test/test_core.py)
     ledger        Run ledger, cache, and financial balance tests (test/test_ledger.py)
@@ -75,15 +75,17 @@ ${C_BOLD}SUITES${C_RESET}
     ocr_canvas    Run synthetic receipt image generator & distortion tests (test/test_ocr_canvas.py)
     ocr_benchmark Run real photo benchmark suite & econometric evaluation tests (test/test_ocr_benchmark.py)
     security      Run LAN pairing security handshake & auth tests (test/test_security_handshake.py)
+    web           Run web workbench and static file server tests (test/test_web_server.py)
 
 ${C_BOLD}OPTIONS${C_RESET}
     -a, --all               Run all test suites.
-    -s, --suite <name>      Run a specific suite: schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security, or all.
+    -s, --suite <name>      Run a specific suite: schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security, web, or all.
     -k, --keyword <pattern> Run tests matching the given keyword expression.
     -v, --verbose           Run pytest with verbose output (-vv).
     -q, --quiet             Run pytest with minimal output (-q).
     -l, --list              List test suites, test files, and test case counts.
     -c, --coverage          Collect code coverage if pytest-cov is installed.
+    --clean                 Clean test caches, pytest artifacts, and ephemeral databases before running.
     -h, --help              Show this help message and exit.
 
 ${C_BOLD}EXAMPLES${C_RESET}
@@ -116,8 +118,8 @@ list_test_suites() { # 34
     printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "SUITE" "FILE" "TEST CASES" "DESCRIPTION"
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
 
-    local -r suites=("schema" "core" "ledger" "cli" "dashboard" "profiler" "server" "mobile" "ocr" "ocr_canvas" "ocr_benchmark" "security")
-    local -r files=("test/test_schema.py" "test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py" "test/test_ocr.py" "test/test_ocr_canvas.py" "test/test_ocr_benchmark.py" "test/test_security_handshake.py")
+    local -r suites=("schema" "core" "ledger" "cli" "dashboard" "profiler" "server" "mobile" "ocr" "ocr_canvas" "ocr_benchmark" "security" "web")
+    local -r files=("test/test_schema.py" "test/test_core.py" "test/test_ledger.py" "test/test_cli.py" "test/test_dashboard.py" "test/test_profiler.py" "test/test_server.py" "test/test_mobile_sync.py" "test/test_ocr.py" "test/test_ocr_canvas.py" "test/test_ocr_benchmark.py" "test/test_security_handshake.py" "test/test_web_server.py")
     local -r descs=(
         "Canonical SSOT schema definitions, column sequences & hashes"
         "Core receipt schema validation & index algorithms"
@@ -131,6 +133,7 @@ list_test_suites() { # 34
         "Synthetic receipt image generator & distortion pipeline"
         "Real photo benchmark suite & econometric evaluation"
         "LAN pairing security handshake, auth registry & TLS pinning"
+        "Web workbench and static asset server tests"
     )
 
     local total_tests=0
@@ -150,15 +153,15 @@ list_test_suites() { # 34
     done
 
     printf "%-10s %-25s %-12s %s\n" "----------" "-------------------------" "------------" "--------------------------------------------------"
-    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "12 files" "$total_tests" "Full test suite coverage"
+    printf "${C_BOLD}%-10s %-25s %-12s %s${C_RESET}\n" "TOTAL" "13 files" "$total_tests" "Full test suite coverage"
 }
 
 # Map a suite name to its corresponding test file path.
-resolve_suite_targets() { # 45
+resolve_suite_targets() { # 48
     local -r suite_name="$1"
     case "$suite_name" in
         all)
-            echo "test/test_schema.py test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py test/test_ocr.py test/test_ocr_canvas.py test/test_ocr_benchmark.py test/test_security_handshake.py"
+            echo "test/test_schema.py test/test_core.py test/test_ledger.py test/test_cli.py test/test_dashboard.py test/test_profiler.py test/test_server.py test/test_mobile_sync.py test/test_ocr.py test/test_ocr_canvas.py test/test_ocr_benchmark.py test/test_security_handshake.py test/test_web_server.py"
             ;;
         schema)
             echo "test/test_schema.py"
@@ -196,8 +199,11 @@ resolve_suite_targets() { # 45
         security)
             echo "test/test_security_handshake.py"
             ;;
+        web)
+            echo "test/test_web_server.py"
+            ;;
         *)
-            log_error "Unknown test suite: '${suite_name}'. Allowed: all, schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security."
+            log_error "Unknown test suite: '${suite_name}'. Allowed: all, schema, core, ledger, cli, dashboard, profiler, server, mobile, ocr, ocr_canvas, ocr_benchmark, security, web."
             return 1
             ;;
     esac
@@ -306,6 +312,12 @@ main() { # 106
                 ;;
             -c|--coverage)
                 coverage_mode=true
+                shift
+                ;;
+            --clean)
+                if [[ -x "${PROJECT_ROOT}/util/clean.sh" ]]; then
+                    bash "${PROJECT_ROOT}/util/clean.sh"
+                fi
                 shift
                 ;;
             --)

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PEIT | Personal Economic Inflation Tracker</title>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/workbench.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+</head>
+<body>
+  <div id="app-workbench">
+    <!-- Header -->
+    <header id="workbench-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+          PEIT WORKBENCH
+        </div>
+        <span class="brand-subtitle">Financial Terminal v0.1.0</span>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light / Dark Mode">
+          <span>Theme</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Informative Connection & Fallback Banner (Shown when daemon is offline or fallback active) -->
+    <div id="workbench-connection-banner" class="workbench-banner banner-warning" style="display: none;">
+      <div class="banner-content">
+        <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <span id="banner-message">Daemon offline — displaying local fallback data. Run <code>peit --serve</code> to connect to active ledger.</span>
+      </div>
+      <div class="banner-actions">
+        <button id="banner-retry-btn" class="banner-btn">Retry Connection</button>
+      </div>
+    </div>
+
+    <!-- Body: Activity Bar + Sidebar + Main Area -->
+    <div id="workbench-body">
+      <!-- Activity Bar -->
+      <peit-activity-bar id="activity-bar"></peit-activity-bar>
+
+      <!-- Sidebar -->
+      <aside id="sidebar">
+        <div class="sidebar-header">
+          <span id="sidebar-title">DASHBOARD OVERVIEW</span>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">ACCOUNTS & SCOPE</div>
+          <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">
+            Current: <strong style="color: var(--md-sys-color-primary);">All Accounts</strong>
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">INTEGRATION STATUS</div>
+          <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
+            <div>Protocol: <span class="mono">HTTP/1.1 REST</span></div>
+            <div>Sync Mode: <span class="mono">Local-First (LAN)</span></div>
+            <div>SSOT Schema: <span class="mono">25 Columns</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main id="main-content">
+        <!-- View: Dashboard -->
+        <div id="view-dashboard" class="main-view-container">
+          <peit-kpi-cards></peit-kpi-cards>
+          <peit-data-grid></peit-data-grid>
+        </div>
+
+        <!-- View: Ledger Grid -->
+        <div id="view-ledger" class="main-view-container" style="display: none;">
+          <peit-data-grid></peit-data-grid>
+        </div>
+
+        <!-- View: Flutter Island -->
+        <div id="view-flutter" class="main-view-container" style="display: none;">
+          <peit-flutter-island></peit-flutter-island>
+        </div>
+
+        <!-- View: Profiler -->
+        <div id="view-profiler" class="main-view-container" style="display: none;">
+          <div class="kpi-card" style="padding: 24px; text-align: center;">
+            <h3 style="margin-bottom: 8px;">Econometric Market Profiler</h3>
+            <p style="color: var(--md-sys-color-outline); font-size: 12px;">
+              Synthetic profile generation and market dynamics modeling workbench.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Status Bar -->
+    <peit-status-bar id="status-bar"></peit-status-bar>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
+

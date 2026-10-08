@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import mimetypes
 import signal
 import threading
 from datetime import datetime, timezone
@@ -17,6 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from peit.auth import (
     DEFAULT_PAIRING_TTL_SECONDS,
@@ -47,7 +49,7 @@ def get_ledger_entry_count(db: LedgerDatabase) -> int:
 
 
 class PEITRequestHandler(BaseHTTPRequestHandler):
-  """HTTP request handler providing REST API endpoints for PEIT sync."""
+  """HTTP request handler providing REST API endpoints and web workbench static serving."""
 
   server: PEITHTTPServer
 
@@ -86,46 +88,176 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
     self.end_headers()
 
   def do_GET(self) -> None:
-    """Handle GET requests for health, summary, and entries."""
+    """Handle GET requests for health, summary, entries, and web static assets."""
     parsed = urlparse(self.path)
-    path = parsed.path.rstrip("/")
-    if not path:
-      path = "/"
+    clean_path = parsed.path.rstrip("/")
+    if not clean_path:
+      clean_path = "/"
     params = parse_qs(parsed.query)
 
-    if path in ("/api/v1/health", "/health"):
+    # 1. API routes
+    if clean_path in ("/api/v1/health", "/health"):
       self._handle_health()
-    elif path in ("/api/v1/summary", "/summary"):
+      return
+    elif clean_path in ("/api/v1/summary", "/summary"):
       self._handle_summary(params)
-    elif path in ("/api/v1/entries", "/entries"):
+      return
+    elif clean_path in ("/api/v1/entries", "/entries"):
       self._handle_entries(params)
-    elif path == "/":
+      return
+
+    # Check if client explicitly asks for API root info via Accept: application/json
+    accept_hdr = self.headers.get("Accept", "")
+    if clean_path == "/" and "application/json" in accept_hdr and "text/html" not in accept_hdr:
+      self._handle_api_root()
+      return
+
+    # 2. Static web asset routing (web workbench)
+    if self._handle_static_file(parsed.path):
+      return
+
+    # 3. Fallback for root if web assets not present
+    if clean_path == "/":
+      self._handle_api_root()
+      return
+
+    # 4. Unknown endpoint
+    self.send_json(
+        404,
+        {
+            "error": "not_found",
+            "message": f"Endpoint not found: {parsed.path}",
+        },
+    )
+
+  def _handle_api_root(self) -> None:
+    """Send API root information JSON."""
+    self.send_json(
+        200,
+        {
+            "service": "PEIT Synchronization Daemon",
+            "status": "ok",
+            "version": VERSION,
+            "auth_enabled": self.server.secure,
+            "pairing_active": self.server.pairing_manager.is_pairing_active,
+            "endpoints": [
+                "/api/v1/health",
+                "/api/v1/summary",
+                "/api/v1/entries",
+                "/api/v1/sync/push",
+                "/api/v1/pair/initiate",
+                "/api/v1/pair/confirm",
+            ],
+        },
+    )
+
+  def _handle_static_file(self, raw_path: str) -> bool:
+    """Serve static file from web_root with strict directory traversal protection.
+
+    Returns True if handled (either served 200, 403, or 404), False if web_root not found.
+    """
+    web_root = self.server.web_root
+    if not web_root or not web_root.is_dir():
+      return False
+
+    # Decode percent-encoding and normalize path
+    unquoted = unquote(raw_path)
+    rel_path = unquoted.lstrip("/")
+    if not rel_path or rel_path == "index.html":
+      target_file = web_root / "index.html"
+    else:
+      target_file = web_root / rel_path
+
+    # Security check: Ensure canonical resolved path is strictly within web_root
+    try:
+      resolved_file = target_file.resolve()
+      resolved_root = web_root.resolve()
+      if not resolved_file.is_relative_to(resolved_root):
+        self.send_json(
+            403,
+            {
+                "error": "forbidden",
+                "message": "Access denied: Directory traversal forbidden",
+            },
+        )
+        return True
+    except Exception:
       self.send_json(
-          200,
+          403,
           {
-              "service": "PEIT Synchronization Daemon",
-              "status": "ok",
-              "version": VERSION,
-              "auth_enabled": self.server.secure,
-              "pairing_active": self.server.pairing_manager.is_pairing_active,
-              "endpoints": [
-                  "/api/v1/health",
-                  "/api/v1/summary",
-                  "/api/v1/entries",
-                  "/api/v1/sync/push",
-                  "/api/v1/pair/initiate",
-                  "/api/v1/pair/confirm",
-              ],
+              "error": "forbidden",
+              "message": "Access denied",
           },
       )
-    else:
+      return True
+
+    # If directory requested, check for index.html
+    if resolved_file.is_dir():
+      resolved_file = resolved_file / "index.html"
+
+    if not resolved_file.is_file():
+      if raw_path == "/":
+        return False
       self.send_json(
           404,
           {
               "error": "not_found",
-              "message": f"Endpoint not found: {parsed.path}",
+              "message": f"File not found: {raw_path}",
           },
       )
+      return True
+
+    # Determine canonical MIME type
+    if resolved_file.suffix == ".html":
+      mime_type = "text/html"
+    elif resolved_file.suffix == ".css":
+      mime_type = "text/css"
+    elif resolved_file.suffix == ".js":
+      mime_type = "application/javascript"
+    elif resolved_file.suffix == ".json":
+      mime_type = "application/json"
+    elif resolved_file.suffix == ".svg":
+      mime_type = "image/svg+xml"
+    elif resolved_file.suffix == ".wasm":
+      mime_type = "application/wasm"
+    elif resolved_file.suffix == ".png":
+      mime_type = "image/png"
+    elif resolved_file.suffix in (".jpg", ".jpeg"):
+      mime_type = "image/jpeg"
+    else:
+      mime_type, _ = mimetypes.guess_type(str(resolved_file))
+      if mime_type is None:
+        mime_type = "application/octet-stream"
+
+    # Add charset for text types
+    if mime_type.startswith("text/") or mime_type in (
+        "application/javascript",
+        "application/json",
+    ):
+      content_type = f"{mime_type}; charset=utf-8"
+    else:
+      content_type = mime_type
+
+    try:
+      file_bytes = resolved_file.read_bytes()
+      self.send_response(200)
+      self.send_header("Content-Type", content_type)
+      self.send_header("Content-Length", str(len(file_bytes)))
+      self.send_header("Access-Control-Allow-Origin", "*")
+      self.send_header("Cache-Control", "no-cache")
+      self.end_headers()
+      self.wfile.write(file_bytes)
+      return True
+    except Exception as exc:
+      logger.error("Error reading static file %s: %s", resolved_file, exc)
+      self.send_json(
+          500,
+          {
+              "error": "internal_server_error",
+              "message": "Unable to read static file",
+          },
+      )
+      return True
 
   def _handle_health(self) -> None:
     """Return daemon health, ledger info, auth status, and schema column count."""
@@ -237,6 +369,264 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
               "message": f"Endpoint not found: {parsed.path}",
           },
       )
+
+  def _read_json_body(self) -> tuple[Any, int | None]:
+    """Read and decode incoming JSON request body.
+
+    Returns (parsed_data, None) on success, or (None, http_status_code) on error.
+    """
+    content_length_hdr = self.headers.get("Content-Length")
+    if not content_length_hdr:
+      self.send_json(
+          400,
+          {
+              "error": "bad_request",
+              "message": "Missing Content-Length header",
+          },
+      )
+      return None, 400
+
+    try:
+      content_length = int(content_length_hdr)
+    except ValueError:
+      self.send_json(
+          400,
+          {
+              "error": "bad_request",
+              "message": "Invalid Content-Length header",
+          },
+      )
+      return None, 400
+
+    if content_length > MAX_PAYLOAD_BYTES:
+      self.send_json(
+          413,
+          {
+              "error": "payload_too_large",
+              "message": f"Payload size exceeds limit of {MAX_PAYLOAD_BYTES} bytes",
+          },
+      )
+      return None, 413
+
+    if content_length == 0:
+      return {}, None
+
+    raw_body = self.rfile.read(content_length)
+    try:
+      payload = json.loads(raw_body.decode("utf-8"))
+      return payload, None
+    except (json.JSONDecodeError, UnicodeDecodeError) as err:
+      self.send_json(
+          400,
+          {
+              "error": "invalid_json",
+              "message": f"Malformed JSON: {err}",
+          },
+      )
+      return None, 400
+
+  def _handle_pair_initiate(self) -> None:
+    """Initiate a pairing session and return pairing credentials/URI."""
+    ttl = DEFAULT_PAIRING_TTL_SECONDS
+    # Check if request has body with optional ttl
+    if self.headers.get("Content-Length"):
+      payload, err = self._read_json_body()
+      if err:
+        return
+      if isinstance(payload, dict) and "ttl" in payload:
+        try:
+          ttl = int(payload["ttl"])
+        except (ValueError, TypeError):
+          pass
+
+    host = self.server.server_address[0]
+    port = self.server.server_address[1]
+    with self.server.lock:
+      session_data = self.server.pairing_manager.initiate_pairing(
+          ttl=ttl, host=host, port=port
+      )
+
+    logger.info("Initiated pairing session: %s (TTL: %ds)",
+                session_data["session_id"], ttl)
+    self.send_json(
+        200,
+        {
+            "status": "pairing_initiated",
+            "session_id": session_data["session_id"],
+            "pin": session_data["pin"],
+            "salt": session_data["salt"],
+            "pairing_uri": session_data["pairing_uri"],
+            "expires_at": session_data["expires_at"],
+            "ttl": session_data["ttl"],
+        },
+    )
+
+  def _handle_pair_confirm(self) -> None:
+    """Verify PIN challenge-response proof and register device."""
+    payload, err = self._read_json_body()
+    if err:
+      return
+
+    if not isinstance(payload, dict):
+      self.send_json(
+          400,
+          {
+              "error": "bad_request",
+              "message": "Payload must be a JSON object",
+          },
+      )
+      return
+
+    session_id = str(payload.get("session_id", ""))
+    device_id = str(payload.get("device_id", ""))
+    device_name = str(payload.get("device_name", "") or device_id)
+    pin_proof = str(payload.get("pin_proof", ""))
+
+    if not session_id or not device_id or not pin_proof:
+      self.send_json(
+          400,
+          {
+              "error": "bad_request",
+              "message": "Missing required fields: session_id, device_id, pin_proof",
+          },
+      )
+      return
+
+    with self.server.lock:
+      success, reason = self.server.pairing_manager.confirm_pairing(
+          session_id=session_id,
+          device_id=device_id,
+          pin_proof=pin_proof,
+      )
+
+      if not success:
+        logger.warning(
+            "Pairing confirmation failed for device %s (session %s): %s",
+            device_id,
+            session_id,
+            reason,
+        )
+        self.send_json(
+            401,
+            {
+                "error": "unauthorized",
+                "message": f"Pairing confirmation failed: {reason}",
+                "reason": reason,
+            },
+        )
+        return
+
+      # Success: Generate bearer token and register device in registry
+      auth_token = generate_bearer_token()
+      device = self.server.device_registry.register_device(
+          device_id=device_id,
+          device_name=device_name,
+          bearer_token=auth_token,
+      )
+
+    logger.info("Device '%s' successfully paired with server", device_id)
+    self.send_json(
+        200,
+        {
+            "status": "paired",
+            "device_id": device.device_id,
+            "device_name": device.device_name,
+            "auth_token": auth_token,
+        },
+    )
+
+  def _authenticate_sync_request(self) -> bool:
+    """Authenticate and check replay protections for /api/v1/sync/push.
+
+    Returns True if request is authorized, or False after sending error response.
+    """
+    if not self.server.secure:
+      return True
+
+    # 1. Check Authorization header
+    auth_hdr = self.headers.get("Authorization", "")
+    token = ""
+    if auth_hdr.startswith("Bearer "):
+      token = auth_hdr[7:].strip()
+
+    device_id = self.headers.get("X-PEIT-Device-ID", "").strip()
+    if not device_id or not token:
+      self.send_json(
+          401,
+          {
+              "error": "unauthorized",
+              "message": "Missing Authorization Bearer token or X-PEIT-Device-ID header",
+          },
+      )
+      return False
+
+    with self.server.lock:
+      # 2. Check if device is known and authorized
+      if not self.server.device_registry.is_device_known(device_id):
+        self.send_json(
+            403,
+            {
+                "error": "forbidden",
+                "message": f"Device '{device_id}' is revoked or not authorized",
+            },
+        )
+        return False
+
+      # 3. Check token validity
+      if not self.server.device_registry.validate_token(device_id, token):
+        self.send_json(
+            401,
+            {
+                "error": "unauthorized",
+                "message": "Invalid bearer token for device",
+            },
+        )
+        return False
+
+      # 4. Replay attack and timestamp freshness protection
+      req_timestamp = self.headers.get("X-PEIT-Timestamp")
+      if not req_timestamp:
+        self.send_json(
+            400,
+            {
+                "error": "missing_timestamp_header",
+                "message": "Missing required 'X-PEIT-Timestamp' header",
+            },
+        )
+        return False
+
+      if not validate_timestamp_freshness(req_timestamp):
+        self.send_json(
+            400,
+            {
+                "error": "request_expired",
+                "message": "Request timestamp drift exceeds allowed window (±60s)",
+            },
+        )
+        return False
+
+      req_nonce = self.headers.get("X-PEIT-Nonce")
+      if not req_nonce:
+        self.send_json(
+            400,
+            {
+                "error": "missing_nonce_header",
+                "message": "Missing required 'X-PEIT-Nonce' header",
+            },
+        )
+        return False
+
+      if not self.server.nonce_tracker.check_and_add(req_nonce):
+        self.send_json(
+            400,
+            {
+                "error": "replayed_nonce",
+                "message": f"Nonce '{req_nonce}' has already been processed",
+            },
+        )
+        return False
+
+    return True
 
   def _handle_sync_push(self) -> None:
     """Process incoming receipt entries, validate against schema, and append."""
@@ -436,7 +826,7 @@ class PEITRequestHandler(BaseHTTPRequestHandler):
 
 
 class PEITHTTPServer(ThreadingHTTPServer):
-  """Threading HTTP server with attached LedgerDatabase, security registry, and lock."""
+  """Threading HTTP server with attached LedgerDatabase, security registry, lock, and web root."""
 
   daemon_threads = True
   allow_reuse_address = True
@@ -450,11 +840,93 @@ class PEITHTTPServer(ThreadingHTTPServer):
       device_registry_path: str | Path | None = None,
       certfile: str | Path | None = None,
       keyfile: str | Path | None = None,
+      web_root: str | Path | None = None,
   ):
     super().__init__(server_address, RequestHandlerClass)
     self.ledger_path = Path(ledger_path).resolve()
     self.db = LedgerDatabase(self.ledger_path)
     self.lock = threading.Lock()
+    self.secure = secure
+
+    if device_registry_path is not None:
+      reg_path = Path(device_registry_path).resolve()
+    else:
+      reg_path = self.ledger_path.parent / ".peit_paired_devices.json"
+    self.device_registry = DeviceRegistry(reg_path)
+    self.pairing_manager = PairingManager()
+    self.nonce_tracker = NonceTracker()
+    self.certfile = certfile
+    self.keyfile = keyfile
+
+    # Configure web assets root directory
+    if web_root is not None:
+      self.web_root: Path | None = Path(web_root).resolve()
+    else:
+      # Auto-detect default web directory at repository root or package parent
+      candidate = Path.cwd() / "web"
+      if candidate.is_dir():
+        self.web_root = candidate.resolve()
+      else:
+        pkg_web = Path(__file__).resolve().parent.parent.parent / "web"
+        self.web_root = pkg_web.resolve() if pkg_web.is_dir() else None
+
+    # Configure TLS if certificates provided
+    if certfile and keyfile:
+      ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+      ssl_ctx.load_cert_chain(certfile=str(certfile), keyfile=str(keyfile))
+      self.socket = ssl_ctx.wrap_socket(self.socket, server_side=True)
+
+
+def register_zeroconf_service(
+    port: int,
+    service_type: str = "_peit-sync._tcp.local.",
+    properties: dict[str, str] | None = None,
+) -> tuple[Any, Any] | None:
+  """Register mDNS/Zeroconf service for PEIT desktop daemon.
+
+  Returns a tuple of (Zeroconf, ServiceInfo) if successful, or None if zeroconf
+  is not installed or failed to initialize.
+  """
+  try:
+    from zeroconf import IPVersion, ServiceInfo, Zeroconf
+  except ImportError:
+    logger.info(
+        "zeroconf package not installed; skipping local mDNS advertisement.")
+    return None
+
+  if properties is None:
+    properties = {"version": VERSION, "schema": "25"}
+
+  name = f"PEIT-Desktop-{port}.{service_type}"
+  try:
+    info = ServiceInfo(
+        type_=service_type,
+        name=name,
+        port=port,
+        properties=properties,
+    )
+    zc = Zeroconf(ip_version=IPVersion.V4Only)
+    zc.register_service(info)
+    logger.info("Registered mDNS service %s on port %d", name, port)
+    return zc, info
+  except Exception as exc:
+    logger.warning(
+        "Failed to register mDNS service: %s (falling back to direct IP)", exc)
+    return None
+
+
+def unregister_zeroconf_service(registration: tuple[Any, Any] | None) -> None:
+  """Gracefully unregister Zeroconf service and close mDNS instance."""
+  if not registration:
+    return
+  zc, info = registration
+  try:
+    zc.unregister_service(info)
+    zc.close()
+    logger.info("Unregistered mDNS service %s",
+                getattr(info, "name", "unknown"))
+  except Exception as exc:
+    logger.warning("Error unregistering mDNS service: %s", exc)
 
 
 def create_server(
@@ -465,6 +937,7 @@ def create_server(
     device_registry_path: str | Path | None = None,
     certfile: str | Path | None = None,
     keyfile: str | Path | None = None,
+    web_root: str | Path | None = None,
 ) -> PEITHTTPServer:
   """Create and configure the PEIT ThreadingHTTPServer instance.
 
@@ -476,6 +949,7 @@ def create_server(
     device_registry_path: Optional path for device registry JSON.
     certfile: Optional path to PEM TLS certificate.
     keyfile: Optional path to PEM TLS private key.
+    web_root: Optional path to directory containing frontend web assets.
 
   Returns:
     Configured PEITHTTPServer instance.
@@ -488,6 +962,7 @@ def create_server(
       device_registry_path=device_registry_path,
       certfile=certfile,
       keyfile=keyfile,
+      web_root=web_root,
   )
 
 
@@ -500,6 +975,7 @@ def run_server(
     device_registry_path: str | Path | None = None,
     certfile: str | Path | None = None,
     keyfile: str | Path | None = None,
+    web_root: str | Path | None = None,
 ) -> None:
   """Run the synchronization daemon until interrupted by signal or shutdown."""
   server = create_server(
@@ -510,6 +986,7 @@ def run_server(
       device_registry_path=device_registry_path,
       certfile=certfile,
       keyfile=keyfile,
+      web_root=web_root,
   )
   actual_port = server.server_address[1]
   proto = "https" if (certfile and keyfile) else "http"

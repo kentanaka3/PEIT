@@ -1,0 +1,398 @@
+/* High-Density Data Grid, KPI Cards, and Terminal Widgets */
+
+/* KPI Cards Grid */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.kpi-card {
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.kpi-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--md-sys-color-outline);
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-value.income {
+  color: var(--peit-color-income);
+}
+
+.kpi-value.expense {
+  color: var(--peit-color-expense);
+}
+
+.kpi-subtitle {
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+}
+
+.badge-warning {
+  background-color: var(--peit-color-rate-badge-container);
+  color: var(--peit-color-rate-badge);
+}
+
+.badge-neutral {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-outline);
+}
+
+.badge-success {
+  background-color: var(--peit-color-income-container);
+  color: var(--peit-color-income);
+}
+
+/* Data Grid Host Component */
+peit-data-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Data Grid Container */
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 6px;
+  overflow: hidden;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.grid-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  gap: 12px;
+}
+
+.grid-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--md-sys-color-background);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: min(280px, 100%);
+}
+
+.grid-search-box:focus-within {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+
+.grid-search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--md-sys-color-on-background);
+  font-size: 12px;
+  width: 100%;
+}
+
+.grid-stats {
+  font-size: 11px;
+  color: var(--md-sys-color-outline);
+  font-family: var(--font-family-mono);
+}
+
+.grid-table-wrapper {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  contain: strict;
+  position: relative;
+}
+
+/* 25-Column High-Density Table */
+.data-table {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: left;
+  box-sizing: border-box;
+  height: 28px;
+  line-height: 27px;
+  padding: 0 8px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  user-select: none;
+  overflow: visible;
+}
+
+.data-table th:hover {
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Column Header Button and Resizer */
+.grid-sort-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+}
+
+.grid-sort-btn:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.grid-sort-btn .col-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-sort-btn .sort-indicator {
+  margin-left: 4px;
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.column-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  z-index: 5;
+}
+
+.column-resizer:hover,
+.column-resizer:focus-visible {
+  background-color: var(--md-sys-color-primary);
+  outline: none;
+}
+
+/* Sticky Column Pinning (Columns 1 & 2) excluding spacer rows */
+.data-table tr:not(.grid-spacer) :is(th, td):nth-child(1),
+.data-table tr:not(.grid-spacer) :is(th, td):nth-child(2) {
+  position: sticky;
+  z-index: 2;
+  background: var(--md-sys-color-surface);
+}
+
+.data-table tr:not(.grid-spacer) :is(th, td):nth-child(1) {
+  left: 0;
+}
+
+.data-table tr:not(.grid-spacer) :is(th, td):nth-child(2) {
+  left: var(--first-column-width, 130px);
+}
+
+/* Pinned Headers have higher z-index than pinned data cells and other headers */
+.data-table th:nth-child(-n + 2) {
+  z-index: 4;
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.data-table td {
+  box-sizing: border-box;
+  height: 28px;
+  line-height: 27px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--md-sys-color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.data-table tr:hover td {
+  background: var(--md-sys-color-surface-container);
+}
+
+/* Spacer rows */
+.grid-spacer {
+  pointer-events: none;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.grid-spacer td {
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Column Type Formatting */
+.data-table td.num {
+  text-align: right;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.data-table td.paid-negative {
+  color: var(--peit-color-expense);
+}
+
+.data-table td.paid-positive {
+  color: var(--peit-color-income);
+}
+
+.data-table td.code {
+  font-family: var(--font-family-mono);
+  color: var(--md-sys-color-primary);
+}
+
+/* Empty / Loading States */
+.grid-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--md-sys-color-outline);
+  gap: 8px;
+}
+
+/* Status Indicator Dot */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-online {
+  background-color: var(--peit-color-income);
+  box-shadow: 0 0 6px var(--peit-color-income);
+}
+
+.status-offline {
+  background-color: var(--peit-color-expense);
+  box-shadow: 0 0 6px var(--peit-color-expense);
+}
+
+.status-degraded {
+  background-color: var(--peit-color-rate-badge);
+  box-shadow: 0 0 6px var(--peit-color-rate-badge);
+}
+
+.status-demo {
+  background-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 6px var(--md-sys-color-primary);
+}
+
+.status-pairing {
+  background-color: var(--peit-color-rate-badge);
+  box-shadow: 0 0 6px var(--peit-color-rate-badge);
+  animation: pulse-pairing 1.5s infinite;
+}
+
+@keyframes pulse-pairing {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* Flutter Island Container */
+#flutter-island-container {
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.island-header {
+  padding: 8px 12px;
+  background: var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.island-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
