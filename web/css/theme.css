@@ -71,18 +71,18 @@
   --md-sys-color-secondary-container: #dae2f9;
   --md-sys-color-on-secondary-container: #131c2b;
 
-  --md-sys-color-outline: #747781;
+  --md-sys-color-outline: #595c65;
   --md-sys-color-outline-variant: #c4c7d0;
 
   /* Financial Semantics in Light Mode */
-  --peit-color-income: #15803d;
-  --peit-color-income-container: rgba(21, 128, 61, 0.12);
+  --peit-color-income: #166534;
+  --peit-color-income-container: rgba(22, 101, 52, 0.10);
   --peit-color-expense: #b91c1c;
   --peit-color-expense-container: rgba(185, 28, 28, 0.12);
-  --peit-color-transfer: #2563eb;
-  --peit-color-transfer-container: rgba(37, 99, 235, 0.12);
-  --peit-color-rate-badge: #b45309;
-  --peit-color-rate-badge-container: rgba(180, 83, 9, 0.15);
+  --peit-color-transfer: #1d4ed8;
+  --peit-color-transfer-container: rgba(29, 78, 216, 0.10);
+  --peit-color-rate-badge: #92400e;
+  --peit-color-rate-badge-container: rgba(146, 64, 14, 0.12);
 
   --md-sys-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
   --md-sys-elevation-2: 0 3px 6px rgba(0, 0, 0, 0.12);

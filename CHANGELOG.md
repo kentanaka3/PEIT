@@ -20,9 +20,14 @@ of production compatibility.
   - **Phase 3: VS Code-Style Extension Framework**:
     - Implemented client-side extension host runtime (`web/js/extensions/extension_host.js`, `PeitExtensionHost`) loading plugins from declarative manifests (`web/extensions/manifest_registry.json`).
     - Shipped reference extensions: `peit-crypto-cpi` (crypto-denominated inflation adjustments) and `peit-carbon-footprint` (COICOP-weighted carbon footprint estimator).
-  - **Automated Test Coverage**:
-    - Added `test/test_web_server.py` with 14 unit and integration tests covering MIME types, directory traversals, index fallbacks, and REST proxying.
-    - Expanded test harness to **192 tests across 13 suites** (`schema` [22], `core` [10], `ledger` [26], `cli` [14], `dashboard` [14], `profiler` [40], `server` [11], `mobile` [5], `ocr` [9], `ocr_canvas` [7], `ocr_benchmark` [6], `security` [14], `web` [14]).
+    - Added `test/test_web_server.py` with 23 unit and integration tests covering MIME types, directory traversals, index fallbacks, REST proxying, socket frames, virtualization contracts, schema validation, and WCAG AA accessibility tokens.
+    - Expanded test harness to **201 tests across 13 suites** (`schema` [22], `core` [10], `ledger` [26], `cli` [14], `dashboard` [14], `profiler` [40], `server` [11], `mobile` [5], `ocr` [9], `ocr_canvas` [7], `ocr_benchmark` [6], `security` [14], `web` [23]).
+  - **Comprehensive Web Workbench Audit & Remediation (Phases A–E)**:
+    - Resolved 29 identified defects across syntax, server protocol, DOM virtualization, financial SSOT provenance, extension sandboxing, and WCAG 2.1 AA accessibility.
+    - Implemented fixed-height windowed virtualization (`web/js/components/data_grid.js`) maintaining <60 DOM rows across 50,000+ entries.
+    - Implemented 3-axis state machine (`transport`, `dataSource`, `freshness`) in `web/js/store.js` guaranteeing authentic empty ledgers are never overwritten by synthetic demo data.
+    - Hardened extension host (`web/js/extensions/extension_host.js`) with deeply frozen entry projections (`Object.freeze`) and isolated error boundaries.
+    - Upgraded contrast tokens and added roving tabindex accessible keyboard navigation (`web/js/components/activity_bar.js`, `Ctrl+B` toggle).
 
 - **Single Source of Truth (SSOT) Architecture Restructuring (`src/peit/schema.py`, `mobile/lib/data/schema_constants.dart`, `util/generate_mobile_schema.py`)**:
   - Implemented canonical Python SSOT module (`src/peit/schema.py`) using strictly Python standard library:

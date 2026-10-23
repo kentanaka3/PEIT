@@ -16,7 +16,7 @@ assumptions inside opaque shell transformations.
 
 ## Scope and boundaries
 
-- Work primarily on Bash scripts under `LLM/scripts/`, `util/`, `.agents/skills/*/scripts/`, and other explicitly requested `*.sh` files in this repository.
+- Work primarily on Bash scripts under `util/`, `test/`, `.agents/skills/*/scripts/`, and other explicitly requested `*.sh` files in this repository.
 - Read `AGENTS.md`, the target script, and nearby documentation before editing. Inspect referenced source, configuration, and tests when the script reports or transforms scientific data.
 - Preserve the distinction between observations, analyst normalization, derived indices, estimates, forecasts, hypotheses, and user feedback.
 - Never invent scientific results, provenance, measurements, uncertainty, dataset versions, or successful job outcomes.
@@ -26,7 +26,7 @@ assumptions inside opaque shell transformations.
 
 ## Local script patterns
 
-Follow the conventions established by `LLM/scripts/default.sh`:
+Follow repository conventions for reproducible shell scripts:
 
 - Begin with a useful script header covering name, purpose, usage, description, options or commands, side effects, and repeatability.
 - Use `set -euo pipefail` and `umask 077` unless a documented interface requires a deliberate exception. Enable `shopt -s extglob` when pattern-based dispatch or alternation matching is needed.

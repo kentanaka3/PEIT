@@ -29,6 +29,9 @@ async function initApp() {
     });
   }
 
+  // Setup sidebar toggle button and keyboard shortcut (Ctrl+B / Cmd+B)
+  initSidebarToggle();
+
   // Setup banner retry listener
   const retryBtn = document.getElementById("banner-retry-btn");
   if (retryBtn) {
@@ -104,9 +107,22 @@ function switchView(tabId) {
         extViewContainer = document.createElement("div");
         extViewContainer.id = `${dynamicViewPrefix}${tabId}`;
         extViewContainer.className = "main-view-container";
-        // Create custom element tag matching tabId or registered view
-        const customElName = `${tabId}-view`;
-        extViewContainer.innerHTML = `<${customElName}></${customElName}>`;
+
+        // Resolve tag or constructor from extensionHost view registry
+        const registeredTag = extensionHost ? extensionHost.resolveViewTag(tabId) : null;
+        const tagToCreate = registeredTag || `${tabId}-view`;
+
+        // Check if custom element is defined or in registry
+        if (customElements.get(tagToCreate) || (extensionHost && extensionHost.hasView(tagToCreate))) {
+          const viewEl = document.createElement(tagToCreate);
+          extViewContainer.appendChild(viewEl);
+        } else {
+          const errEl = document.createElement("div");
+          errEl.className = "kpi-card";
+          errEl.style.padding = "24px";
+          errEl.textContent = `Extension view '${tabId}' is not registered or failed to activate.`;
+          extViewContainer.appendChild(errEl);
+        }
         mainContent.appendChild(extViewContainer);
       }
       extViewContainer.style.display = "flex";
@@ -125,6 +141,57 @@ function switchView(tabId) {
     };
     sidebarTitle.textContent = titles[tabId] || tabId.toUpperCase().replace(/-/g, " ");
   }
+}
+
+function initSidebarToggle() {
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebar-toggle-btn");
+  if (!sidebar) return;
+
+  const storageKey = "peit_workbench_sidebar_collapsed";
+  const applyState = (collapsed) => {
+    sidebar.hidden = collapsed;
+    if (toggleBtn) {
+      toggleBtn.setAttribute("aria-expanded", String(!collapsed));
+    }
+    try {
+      localStorage.setItem(storageKey, collapsed ? "true" : "false");
+    } catch (_) {}
+  };
+
+  // Restore saved state
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved === "true") {
+      applyState(true);
+    } else {
+      applyState(false);
+    }
+  } catch (_) {
+    applyState(false);
+  }
+
+  const toggle = () => {
+    const nextCollapsed = !sidebar.hidden;
+    applyState(nextCollapsed);
+    if (nextCollapsed && sidebar.contains(document.activeElement)) {
+      document.querySelector('.activity-item.active, .activity-item[aria-selected="true"]')?.focus();
+    }
+  };
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", toggle);
+  }
+
+  // Keyboard shortcut: Ctrl+B or Cmd+B
+  document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.isComposing || e.altKey) return;
+    const editing = e.target instanceof Element && e.target.closest("input, textarea, select, [contenteditable]");
+    if (!editing && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      e.preventDefault();
+      toggle();
+    }
+  });
 }
 
 if (document.readyState === "loading") {

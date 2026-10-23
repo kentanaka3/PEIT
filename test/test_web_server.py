@@ -649,3 +649,105 @@ def test_t13_21_multi_state_provenance_and_kpi_parity(running_web_server):
   assert "Offline Cache" in status_code
   assert "Demo Mode" in status_code
 
+
+def test_t13_22_extension_api_hardening_and_integrity(running_web_server):
+  """T13.22 (Phase D): Verifies extension sandbox hardening, schema alignment, and safe DOM."""
+  server, base_url, _ = running_web_server
+
+  # 1. Extension host sandbox contracts
+  status, raw, _ = make_raw_request(base_url, "/js/extensions/extension_host.js")
+  assert status == 200
+  host_code = raw.decode("utf-8")
+  assert "freezeEntryProjection" in host_code
+  assert "Object.freeze" in host_code
+  assert "Error in entry subscriber:" in host_code
+  assert "rollbackExtension" in host_code
+  assert "resolveViewTag" in host_code
+
+  # 2. Reference extensions schema alignment and absence of nonexistent total_price
+  for ext_path in [
+      "/extensions/peit-carbon-footprint/index.js",
+      "/extensions/peit-crypto-cpi/index.js",
+  ]:
+    status, raw, _ = make_raw_request(base_url, ext_path)
+    assert status == 200
+    ext_code = raw.decode("utf-8")
+    assert "paid_total" in ext_code
+    assert "total_price" not in ext_code
+    assert "isConsumptionExpense" in ext_code
+    assert "Demonstration" in ext_code
+    # XSS Protection: safe DOM construction instead of innerHTML template interpolation
+    assert "replaceChildren" in ext_code
+    assert "innerHTML =" not in ext_code
+
+
+def test_t13_23_phase_e_accessibility_and_shell_polish(running_web_server):
+  """T13.23 (Phase E): Verifies WCAG 2.1 AA contrast tokens, keyboard navigation,
+
+  status bar live regions, and reduced motion CSS media queries.
+  """
+  server, base_url, _ = running_web_server
+
+  # 1. WCAG Contrast Color Tokens in theme.css
+  status, raw, _ = make_raw_request(base_url, "/css/theme.css")
+  assert status == 200
+  theme_css = raw.decode("utf-8")
+  assert "--md-sys-color-outline: #595c65;" in theme_css
+  assert "--peit-color-rate-badge: #92400e;" in theme_css
+  assert "--peit-color-income: #166534;" in theme_css
+  assert "--peit-color-transfer: #1d4ed8;" in theme_css
+
+  # 2. Activity Bar Accessibility Attributes & Keyboard Navigation
+  status, raw, _ = make_raw_request(base_url, "/js/components/activity_bar.js")
+  assert status == 200
+  activity_bar_js = raw.decode("utf-8")
+  assert 'role="tablist"' in activity_bar_js or 'role", "tablist"' in activity_bar_js
+  assert 'aria-orientation="vertical"' in activity_bar_js or 'aria-orientation", "vertical"' in activity_bar_js
+  assert 'role="tab"' in activity_bar_js
+  assert "aria-selected" in activity_bar_js
+  assert "aria-controls" in activity_bar_js
+  assert "tabindex" in activity_bar_js
+  assert "handleKeyDown" in activity_bar_js
+  assert "ArrowDown" in activity_bar_js
+  assert "ArrowUp" in activity_bar_js
+  assert "Home" in activity_bar_js
+  assert "End" in activity_bar_js
+
+  # 3. Sidebar Toggle Accessibility & Keyboard Shortcut in app.js and index.html
+  status, raw, _ = make_raw_request(base_url, "/js/app.js")
+  assert status == 200
+  app_js = raw.decode("utf-8")
+  assert "initSidebarToggle" in app_js
+  assert "aria-expanded" in app_js
+  assert "peit_workbench_sidebar_collapsed" in app_js
+
+  status, raw, _ = make_raw_request(base_url, "/")
+  assert status == 200
+  index_html = raw.decode("utf-8")
+  assert 'id="sidebar-toggle-btn"' in index_html
+  assert 'aria-controls="sidebar"' in index_html
+  assert 'role="tabpanel"' in index_html
+
+  # 4. Status Bar Live Regions & Screen Reader Announcements in status_bar.js
+  status, raw, _ = make_raw_request(base_url, "/js/components/status_bar.js")
+  assert status == 200
+  status_bar_js = raw.decode("utf-8")
+  assert 'role="region"' in status_bar_js or 'role", "region"' in status_bar_js
+  assert 'role="status"' in status_bar_js
+  assert 'aria-live="polite"' in status_bar_js
+  assert 'aria-atomic="true"' in status_bar_js
+
+  # 5. Reduced Motion and Responsive Media Queries in CSS files
+  status, raw, _ = make_raw_request(base_url, "/css/workbench.css")
+  assert status == 200
+  workbench_css = raw.decode("utf-8")
+  assert "prefers-reduced-motion: reduce" in workbench_css
+  assert "animation-duration: 0.01ms !important;" in workbench_css
+  assert "transition-duration: 0.01ms !important;" in workbench_css
+  assert ".activity-item:focus-visible" in workbench_css
+  assert "@media (max-width: 1024px)" in workbench_css
+
+  status, raw, _ = make_raw_request(base_url, "/css/components.css")
+  assert status == 200
+  components_css = raw.decode("utf-8")
+  assert "prefers-reduced-motion: reduce" in components_css

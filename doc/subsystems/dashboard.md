@@ -382,7 +382,7 @@ bash test/run_tests.sh --suite dashboard
 # 2. Run dashboard tests with verbose output
 bash test/run_tests.sh -s dashboard -v
 
-# 3. Run all test suites (13 suites, 192 tests)
+# 3. Run all test suites (13 suites, 201 tests)
 bash test/run_tests.sh --all
 
 # 4. Filter tests by keyword expression (e.g. Bennett decomposition)

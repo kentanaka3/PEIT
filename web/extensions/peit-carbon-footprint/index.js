@@ -81,7 +81,8 @@ class CarbonFootprintView extends HTMLElement {
     const catEmissions = {};
 
     entries.forEach((e) => {
-      const amt = Number(e.total_price) || 0;
+      if (!isConsumptionExpense(e)) return;
+      const amt = Math.abs(Number(e.paid_total) || 0);
       const cat = (e.category || "default").toLowerCase();
       const factor = CATEGORY_EMISSION_FACTORS[cat] ?? CATEGORY_EMISSION_FACTORS.default;
       const co2 = amt * factor;

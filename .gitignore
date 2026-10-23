@@ -546,3 +546,26 @@ TSWLatexianTemp*
 
 # Mac
 .DS_Store
+
+# Dart & Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/pubspec.lock
+
+# Local Test Artifacts, Fixtures & Ephemeral Ledgers
+*.db-journal
+*.db-wal
+*.db-shm
+.peit_paired_devices.json
+data/.peit_paired_devices.json
+data/ledger.db-journal
+data/ledger.db-wal
+data/ledger.db-shm
+test/**/__pycache__/
+web_test_ledger.jsonl

@@ -22,6 +22,9 @@
         <span class="brand-subtitle">Financial Terminal v0.1.0</span>
       </div>
       <div class="header-actions">
+        <button id="sidebar-toggle-btn" class="theme-toggle-btn" title="Toggle primary sidebar (Ctrl+B / Cmd+B)" aria-label="Toggle primary sidebar" aria-controls="sidebar" aria-expanded="true">
+          <span>Sidebar</span>
+        </button>
         <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light / Dark Mode">
           <span>Theme</span>
         </button>
@@ -68,25 +71,25 @@
       </aside>
 
       <!-- Main Content Area -->
-      <main id="main-content">
+      <main id="main-content" role="main">
         <!-- View: Dashboard -->
-        <div id="view-dashboard" class="main-view-container">
+        <div id="view-dashboard" class="main-view-container" role="tabpanel" aria-labelledby="tab-dashboard">
           <peit-kpi-cards></peit-kpi-cards>
           <peit-data-grid></peit-data-grid>
         </div>
 
         <!-- View: Ledger Grid -->
-        <div id="view-ledger" class="main-view-container" style="display: none;">
+        <div id="view-ledger" class="main-view-container" role="tabpanel" aria-labelledby="tab-ledger" style="display: none;">
           <peit-data-grid></peit-data-grid>
         </div>
 
         <!-- View: Flutter Island -->
-        <div id="view-flutter" class="main-view-container" style="display: none;">
+        <div id="view-flutter" class="main-view-container" role="tabpanel" aria-labelledby="tab-flutter" style="display: none;">
           <peit-flutter-island></peit-flutter-island>
         </div>
 
         <!-- View: Profiler -->
-        <div id="view-profiler" class="main-view-container" style="display: none;">
+        <div id="view-profiler" class="main-view-container" role="tabpanel" aria-labelledby="tab-profiler" style="display: none;">
           <div class="kpi-card" style="padding: 24px; text-align: center;">
             <h3 style="margin-bottom: 8px;">Econometric Market Profiler</h3>
             <p style="color: var(--md-sys-color-outline); font-size: 12px;">

@@ -408,7 +408,7 @@ Additionally, `test/test_core.py` validates underlying price index formulas, `te
 
 ### 6.2 The Scientific Test Runner (`test/run_tests.sh`)
 
-PEIT provides a standardized Bash runner script executing **192 unit and integration tests** across 13 suites:
+PEIT provides a standardized Bash runner script executing **201 unit and integration tests** across 13 suites:
 
 ```bash
 # View usage and options
@@ -417,7 +417,7 @@ bash test/run_tests.sh --help
 # List available suites and test counts
 bash test/run_tests.sh --list
 
-# Execute all 192 test cases
+# Execute all 201 test cases
 bash test/run_tests.sh --all
 
 # Execute a specific suite

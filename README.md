@@ -225,10 +225,10 @@ python -m peit.profiler generate \
 
 ## Testing & Quality Assurance
 
-PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` executing **192 tests across 13 project suites** (`schema`, `core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`, `security`, `web`):
+PEIT includes a standardized scientific Bash test runner `test/run_tests.sh` executing **201 tests across 13 project suites** (`schema`, `core`, `ledger`, `cli`, `dashboard`, `profiler`, `server`, `mobile`, `ocr`, `ocr_canvas`, `ocr_benchmark`, `security`, `web`):
 
 ```bash
-# Run all tests (192 tests across 13 suites)
+# Run all tests (201 tests across 13 suites)
 bash test/run_tests.sh --all
 
 # Run specific test suites
@@ -238,7 +238,7 @@ bash test/run_tests.sh --suite ledger        # Signed ledger, SQLite cache, bala
 bash test/run_tests.sh --suite cli           # Command-line interface parsing & commands (14 tests)
 bash test/run_tests.sh --suite dashboard     # Multi-graph dashboard visualizer & KPI metrics (14 tests)
 bash test/run_tests.sh --suite security      # LAN pairing handshake, auth registry & TLS pinning (14 tests)
-bash test/run_tests.sh --suite web           # Web workbench micro-shell & static asset delivery (14 tests)
+bash test/run_tests.sh --suite web           # Web workbench micro-shell & static asset delivery (23 tests)
 bash test/run_tests.sh --suite server        # Desktop synchronization daemon & REST API (11 tests)
 bash test/run_tests.sh --suite core          # Core Schema validation & index algorithms (10 tests)
 bash test/run_tests.sh --suite ocr           # Heuristic receipt parser & 25-column conversion (9 tests)
