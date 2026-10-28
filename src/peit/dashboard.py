@@ -13,11 +13,9 @@ import argparse
 import csv
 import html
 import json
-import os
 import sys
 import webbrowser
 from collections import defaultdict
-from dataclasses import asdict
 from datetime import date
 from pathlib import Path
 from typing import Any, Sequence

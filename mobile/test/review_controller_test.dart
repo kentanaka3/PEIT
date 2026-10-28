@@ -1,9 +1,8 @@
 import 'package:test/test.dart';
 import '../lib/controllers/receipt_review_controller.dart';
 import '../lib/data/database.dart';
-import '../lib/data/schema.dart';
+import '../lib/data/schema_constants.dart';
 import '../lib/ocr/models.dart';
-import '../lib/ocr/parser.dart';
 
 void main() {
   group('ReceiptReviewController & Hybrid Ledger Commit', () {
@@ -102,7 +101,7 @@ void main() {
       expect(controller.isBalanced, isTrue);
     });
 
-    test('commitToDatabase writes approved rows to Drift SQLite with valid schema and deterministic entry_id', () async {
+    test('commitToDatabase writes approved rows to SQLite with valid schema and deterministic entry_id', () async {
       final db = AppDatabase.openInMemory();
 
       try {
@@ -157,4 +156,3 @@ void main() {
     });
   });
 }
-

@@ -7,10 +7,7 @@ projection caching for indexed inquiries and financial balances.
 
 from __future__ import annotations
 
-import csv
-import hashlib
 import json
-import os
 import re
 import sqlite3
 import uuid
@@ -20,13 +17,9 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from peit.core import (
-    MONTH_RE,
     read_csv,
-    validate_rows,
 )
 from peit.schema import (
-    LEDGER_COLUMNS,
-    RECEIPT_COLUMNS,
     EventType,
     Availability,
     QualityTier,

@@ -1,9 +1,6 @@
 /// OCR data models conforming to PEIT strict 25-column ledger semantics.
 library peit_ocr_models;
 
-import 'dart:convert';
-import 'package:crypto/crypto.dart' show sha256;
-import '../data/schema.dart';
 import '../data/schema_constants.dart';
 import '../models/receipt_entry.dart';
 
@@ -420,4 +417,3 @@ class ParsedReceipt {
     'raw_text': rawText,
   };
 }
-

@@ -16,6 +16,33 @@ and project boundaries, see [`../AGENTS.md`](../AGENTS.md).
 
 ## Native Android showcase
 
+### Responsive UI and visual design
+
+The redesign targets readable receipt cards on phones and a data workspace
+on genuinely wide content areas. Grid mode on a phone must scroll columns
+horizontally rather than shrink headings into character fragments; its
+inspector opens separately. Side-by-side inspection requires sufficient
+available content width, not merely a tablet-sized device classification.
+Enlarged system text must preserve readable controls and reachable actions.
+
+Original SVG design concepts live in [`img/`](img/); launcher artwork lives
+in the [Android resources](app/src/main/res/). These are interface design
+artifacts, not evidence of usability or scientific validity. See
+[the plan](.agent/plan.md#visual-redesign-2026-10-22) for implementation and
+device-validation status.
+
+| Visual concept | Purpose |
+|---|---|
+| [Phone receipt stream](img/01-phone-stream.svg) | Calm stacked cards, explicit local/synthetic provenance, separate price and expenditure concepts. |
+| [Phone receipt review](img/02-phone-review.svg) | Full-width fields, visible uncertainty and a reachable reviewed-payment action. |
+| [Tablet ledger workspace](img/03-tablet-ledger.svg) | Readable table columns and an evidence inspector only with sufficient workspace width. |
+| [Identity and launcher mark](img/04-identity.svg) | Original receipt-and-signal logo, adaptive-icon geometry, ink/teal palette and small-size studies. |
+
+Before a recording, verify both card and grid modes on the actual device.
+Check the selection toolbar, header labels, inspector, navigation, and
+verification payment/action area at default and enlarged font sizes.
+Do not shrink fonts to disguise an undersized layout.
+
 ### Build prerequisites and offline checks
 
 - An already installed Android SDK platform **37.2**, the project's cached
@@ -88,8 +115,18 @@ These are derived prototype indicators, not official CPI figures.
 ### Verification record
 
 See [the implementation plan](.agent/plan.md) for current task and validation
-status. Device rehearsal remains required before recording; do not describe
+status. On 2026-10-22, offline debug and instrumentation APK builds and all
+**48 JVM unit tests** passed. Instrumentation tests were compiled, not run.
+Lint remains blocked by uncached desktop/JVM Compose and DataStore
+dependencies; no dependencies were downloaded and lint was not bypassed.
+Device rehearsal remains required before recording; do not describe
 unexecuted camera, rotation, tablet, or accessibility checks as passed.
+
+The Room migration preserves legacy rows and identity hashes. Legacy hash
+compatibility does not authenticate historical data or silently convert old
+quality labels and event types into canonical observations. Review legacy
+records before interpreting them; unsupported event types are excluded from
+consumption indices.
 
 ## Separate Python/web and Flutter workflows
 

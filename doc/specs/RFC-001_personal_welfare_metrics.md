@@ -1,8 +1,8 @@
 # Plan: Personal Welfare Metrics and Economic Price Indices (`peit.metrics`)
 
 > [!NOTE]
-> **Status**: Planning Specification Only (No Implementation).
-> This document specifies the architectural, mathematical, CLI, and test design for the future personal welfare metrics and economic price index module in PEIT.
+> **Status**: Design specification; not a complete implemented module.
+> Some related calculations exist in `src/peit/core.py` and `src/peit/dashboard.py`, but the full algorithms, API, and CLI described here are not implemented as a single `peit.metrics` module. Sections below  remain design material and must not be read as evidence that every formula or capability is available at runtime.
 
 ---
 

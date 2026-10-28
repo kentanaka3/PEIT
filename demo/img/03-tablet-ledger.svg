@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1120" viewBox="0 0 1400 1120" role="img" aria-labelledby="title desc">
+  <title id="title">PEIT — wide-screen ledger and evidence inspector</title>
+  <desc id="desc">Original 1200 dp tablet proposal for expanded layouts at 840 dp and above. A real visual ledger grid sits beside a selected receipt inspector. Synthetic values, human-reviewed status, signed payments, and transparent matched-item methodology remain visible. No personal data.</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#102F36" flood-opacity=".13"/></filter>
+    <style>
+      svg{fill:#112B35}text{font-family:Arial,Helvetica,sans-serif}.muted{fill:#526B70}.small{font-size:12px}.body{font-size:14px}.label{font-size:13px;font-weight:700}.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px}.teal{fill:#087F75}.white{fill:#F4F7F2}
+      [fill="#102F36"]{fill:#112B35}[stroke="#102F36"]{stroke:#112B35}
+      [fill="#176B5B"]{fill:#087F75}[stroke="#176B5B"]{stroke:#087F75}
+      [fill="#F3F5F0"],[fill="#F4F6F2"]{fill:#F4F7F6}
+      [fill="#E8B779"],[fill="#BC8448"]{fill:#D99746}
+    </style>
+  </defs>
+  <rect width="1400" height="1120" fill="#F3F5F0"/>
+  <text x="64" y="64" class="eyebrow">PEIT / WIDE-SCREEN WORKSPACE</text>
+  <text x="64" y="116" font-size="38" font-weight="700">Room to trace every number.</text>
+  <text x="64" y="149" font-size="16" class="muted">03 / Tablet ledger + evidence inspector · 1200 dp example · expanded layouts only</text>
+  <g transform="translate(100 194)" filter="url(#shadow)">
+    <rect x="-10" y="-10" width="1220" height="740" rx="30" fill="#102F36"/>
+    <rect width="1200" height="720" rx="20" fill="#F4F6F2"/>
+    <path d="M20 0H80V720H20Q0 720 0 700V20Q0 0 20 0" fill="#102F36"/>
+    <text x="40" y="43" text-anchor="middle" font-size="18" font-weight="700" class="white">PEIT</text>
+    <path d="M28 100h24m-24 7h24m-24 7h16" stroke="#AAC8BC" stroke-width="2"/>
+    <text x="40" y="138" text-anchor="middle" class="small white">Stream</text>
+    <rect x="12" y="163" width="56" height="62" rx="15" fill="#294E50"/>
+    <rect x="29" y="176" width="22" height="19" rx="3" fill="none" stroke="#8AD5C1" stroke-width="1.6"/>
+    <path d="M29 183h22m-14-7v19" stroke="#8AD5C1" stroke-width="1.4"/>
+    <text x="40" y="214" text-anchor="middle" class="small white">Ledger</text>
+    <path d="M28 266l8-8 8 4 9-11" stroke="#AAC8BC" stroke-width="2" fill="none"/>
+    <text x="40" y="293" text-anchor="middle" class="small white">Insights</text>
+    <circle cx="40" cy="659" r="17" fill="#294E50"/><text x="40" y="664" text-anchor="middle" class="label white">?</text>
+    <text x="104" y="43" font-size="25" font-weight="700">Ledger</text>
+    <text x="200" y="42" class="body muted">October 2026</text>
+    <rect x="850" y="19" width="145" height="30" rx="15" fill="#E4EEE8"/><circle cx="867" cy="34" r="4" fill="#176B5B"/><text x="879" y="39" class="small teal">On this device</text>
+    <rect x="1013" y="11" width="163" height="48" rx="14" fill="#176B5B"/><text x="1094" y="40" text-anchor="middle" class="label white">+ Add receipt</text>
+    <path d="M80 72H1200" stroke="#D4DFD7"/>
+    <rect x="104" y="94" width="322" height="110" rx="16" fill="#FFFFFF" stroke="#D4DFD7"/>
+    <text x="124" y="120" class="label muted">Expenditure</text>
+    <text x="124" y="158" font-size="30" font-weight="700">€248.60</text>
+    <text x="124" y="184" class="small muted">+8.4% vs Sep · quantities and mix also matter</text>
+    <rect x="440" y="94" width="370" height="110" rx="16" fill="#102F36"/>
+    <text x="460" y="120" class="label white">Matched-item price signal</text>
+    <text x="460" y="158" font-size="30" font-weight="700" class="white">102.1</text>
+    <text x="568" y="155" class="body white">Sep = 100</text>
+    <text x="460" y="184" class="small white">12 / 18 base items · 67% coverage · derived</text>
+    <rect x="824" y="94" width="352" height="110" rx="16" fill="#E4EEE8"/>
+    <text x="844" y="120" class="label teal">Synthetic demonstration</text>
+    <text x="844" y="150" font-size="17" font-weight="700">Local records, explicit provenance</text>
+    <text x="844" y="179" class="small muted">No live pairing or cloud synchronization implied.</text>
+    <rect x="104" y="225" width="706" height="425" rx="16" fill="#FFFFFF" stroke="#D4DFD7"/>
+    <text x="124" y="259" font-size="18" font-weight="700">Receipt observations</text>
+    <rect x="527" y="237" width="120" height="36" rx="12" fill="#EDF2ED"/><text x="587" y="260" text-anchor="middle" class="small">EUR only⌄</text>
+    <rect x="657" y="237" width="133" height="36" rx="12" fill="#EDF2ED"/><text x="723" y="260" text-anchor="middle" class="small">Reviewed only⌄</text>
+    <path d="M104 289H810" stroke="#D4DFD7"/>
+    <rect x="105" y="290" width="704" height="43" fill="#F5F7F3"/>
+    <text x="124" y="317" class="small muted">DATE</text><text x="204" y="317" class="small muted">ITEM / MERCHANT</text><text x="456" y="317" class="small muted">QUANTITY</text><text x="579" y="317" class="small muted">UNIT PRICE</text><text x="788" y="317" text-anchor="end" class="small muted">PAID</text>
+    <rect x="105" y="334" width="704" height="70" fill="#E4EEE8"/><rect x="105" y="334" width="4" height="70" fill="#176B5B"/>
+    <text x="124" y="362" class="body">22 Oct</text><text x="204" y="360" class="label">Rolled oats · 500 g</text><text x="204" y="385" class="small muted">Maple Market · reviewed</text><text x="456" y="362" class="body">2 packs</text><text x="579" y="362" class="body">€1.60 / pack</text><text x="788" y="362" text-anchor="end" class="label">−€3.20</text>
+    <path d="M105 404H809" stroke="#E0E7E1"/>
+    <text x="124" y="433" class="body">22 Oct</text><text x="204" y="431" class="label">Oat drink · 1 L</text><text x="204" y="456" class="small muted">Maple Market · reviewed</text><text x="456" y="433" class="body">2 cartons</text><text x="579" y="433" class="body">€2.10 / carton</text><text x="788" y="433" text-anchor="end" class="label">−€4.20</text>
+    <path d="M105 475H809" stroke="#E0E7E1"/>
+    <text x="124" y="504" class="body">22 Oct</text><text x="204" y="502" class="label">Apples · loose</text><text x="204" y="527" class="small muted">Maple Market · reviewed</text><text x="456" y="504" class="body">2 kg</text><text x="579" y="504" class="body">€2.50 / kg</text><text x="788" y="504" text-anchor="end" class="label">−€5.00</text>
+    <path d="M105 546H809" stroke="#E0E7E1"/>
+    <text x="124" y="580" class="small muted">3 selected-receipt rows · expenses use negative payments</text>
+    <rect x="124" y="597" width="226" height="32" rx="10" fill="#F3E7D7"/><text x="237" y="618" text-anchor="middle" class="small" fill="#80572D">1 draft excluded · review separately</text>
+    <rect x="824" y="225" width="352" height="425" rx="16" fill="#FFFFFF" stroke="#D4DFD7"/>
+    <text x="844" y="258" font-size="18" font-weight="700">Observation detail</text>
+    <text x="844" y="282" class="small muted">Selected row · synthetic source</text>
+    <path d="M844 299H1156" stroke="#E0E7E1"/>
+    <text x="844" y="326" class="small muted">ITEM OBSERVED ON RECEIPT</text><text x="844" y="353" font-size="19" font-weight="700">Rolled oats · 500 g</text>
+    <text x="844" y="383" class="body muted">Maple Market · 22 October 2026</text>
+    <rect x="844" y="401" width="312" height="66" rx="12" fill="#EDF3ED"/>
+    <text x="860" y="425" class="label teal">✓ Human-reviewed observation</text><text x="860" y="449" class="small muted">Receipt payment −€12.40 · balanced</text>
+    <text x="844" y="495" class="small muted">ANALYST LABEL · SEPARATE FROM SOURCE</text>
+    <text x="844" y="520" class="body">Recurring consumption</text>
+    <text x="844" y="549" class="small muted">Evidence links back to the original local receipt.</text>
+    <rect x="844" y="573" width="312" height="48" rx="14" fill="#176B5B"/>
+    <text x="1000" y="603" text-anchor="middle" class="label white">Open source receipt ↗</text>
+    <path d="M80 674H1200" stroke="#D4DFD7"/>
+    <circle cx="109" cy="696" r="4" fill="#176B5B"/><text x="122" y="701" class="small muted">Local ledger</text>
+    <text x="300" y="701" class="small muted">Price signal = 100 × mean(current / base item unit price)</text>
+    <text x="1176" y="701" text-anchor="end" class="small muted">Derived prototype indicator · not official CPI</text>
+  </g>
+  <text x="100" y="976" font-size="18" font-weight="700">More space, not more ambiguity.</text>
+  <text x="100" y="1008" font-size="15" class="muted">Show the side inspector only when available workspace width is at least 840 dp, after the navigation rail.</text>
+  <text x="100" y="1035" font-size="15" class="muted">Phones default to cards. Optional compact grid scrolls horizontally with an inspector sheet. All figures are illustrative.</text>
+  <text x="100" y="1080" class="small muted">PEIT DESIGN STUDY / SINGLE-CURRENCY OBSERVATIONS · REVIEWED LABELS · VISIBLE DERIVATION</text>
+</svg>

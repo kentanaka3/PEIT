@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
-import '../data/schema.dart';
+import '../data/schema_constants.dart';
 import '../models/receipt_entry.dart';
 
 /// Form screen for manual receipt and expenditure entry.

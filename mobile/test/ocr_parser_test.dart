@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/data/schema.dart';
-import '../lib/ocr/models.dart';
+import '../lib/data/schema_constants.dart';
 import '../lib/ocr/parser.dart';
 
 void main() {
@@ -149,4 +148,3 @@ TOTAL 85.00
     });
   });
 }
-

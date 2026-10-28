@@ -1,0 +1,92 @@
+{
+  "name": "bob (fictional synthetic example)",
+  "fictional_synthetic_example": true,
+  "currency": "MXN",
+  "start_year": 2024,
+  "months_count": 24,
+  "financial_behavior": {
+    "savings_rate": 0.0,
+    "discount_seeking_probability": 0.0,
+    "refund_probability": 0.0,
+    "savings_merchant": "Synthetic Savings Provider",
+    "savings_description": "Fictional synthetic profile setting"
+  },
+  "income": [],
+  "basket": [
+    {
+      "item": "rent monthly",
+      "product": "Synthetic Monthly Rent",
+      "category": "Housing and utilities",
+      "unit": "month",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 1,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "store_preferences": [
+        {
+          "merchant": "Synthetic Housing Provider",
+          "weight": 1.0,
+          "tier": "C",
+          "rating": 3.0
+        }
+      ],
+      "brand_preferences": [],
+      "variant": "",
+      "description_template": "{product} {pack_size} {unit}",
+      "description_casing": "natural"
+    },
+    {
+      "item": "electricity cfe bimonthly",
+      "product": "Synthetic Electricity Service",
+      "category": "Housing and utilities",
+      "unit": "service",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 2,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "store_preferences": [
+        {
+          "merchant": "Synthetic Electricity Provider",
+          "weight": 1.0,
+          "tier": "C",
+          "rating": 3.0
+        }
+      ],
+      "brand_preferences": [],
+      "variant": "",
+      "description_template": "{product} {pack_size} {unit}",
+      "description_casing": "natural"
+    },
+    {
+      "item": "natural gas",
+      "product": "Synthetic Gas Service",
+      "category": "Housing and utilities",
+      "unit": "service",
+      "scheduling": {
+        "mode": "deterministic",
+        "interval_months": 3,
+        "offset_months": 0
+      },
+      "quantity": 1,
+      "pack_size": 1,
+      "store_preferences": [
+        {
+          "merchant": "Synthetic Gas Provider",
+          "weight": 1.0,
+          "tier": "C",
+          "rating": 3.0
+        }
+      ],
+      "brand_preferences": [],
+      "variant": "",
+      "description_template": "{product} {pack_size} {unit}",
+      "description_casing": "natural"
+    }
+  ]
+}

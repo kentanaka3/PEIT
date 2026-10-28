@@ -1,9 +1,7 @@
-import 'dart:convert';
-import '../data/schema.dart';
 import '../data/schema_constants.dart';
 
 /// Clean domain model representing a receipt item entry in PEIT.
-/// Provides bidirectional mapping to/from SQLite map, Drift row, and 25-column REST API JSON.
+/// Provides bidirectional mapping to/from SQLite maps and 25-column REST API JSON.
 class ReceiptEntryModel {
   final String entryId;
   final bool isSynced;

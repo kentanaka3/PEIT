@@ -100,13 +100,13 @@ them as the same index.
 
 ```mermaid
 flowchart LR
-  Image["Receipt image"] --> MLKit["Mobile MLKitReceiptService"]
+  Image["Receipt image"] --> MLKit["Flutter MLKitReceiptService"]
   MLKit --> Blocks["Recognized text + bounding boxes"]
   Blocks --> MobileParser["Mobile ReceiptParser"]
   Text["Pasted OCR text"] --> MobileTextParser["Mobile ReceiptParser.parseText"]
   MobileTextParser --> MobileReview["Receipt review"]
   MobileParser --> MobileReview
-  MobileReview --> LocalDB["Mobile SQLite"]
+  MobileReview --> LocalDB["Flutter local SQLite"]
 
   Canvas["ReceiptCanvasGenerator"] --> Synthetic["Synthetic image +<br/>ground-truth blocks"]
   PythonBlocks["Annotated OCR text blocks"] --> PyParser["Python ReceiptParser"]
@@ -127,7 +127,7 @@ flowchart LR
 
 PEIT has image OCR: [`mobile/lib/ocr/mlkit_service.dart`](./mobile/lib/ocr/mlkit_service.dart)
 uses on-device ML Kit to recognize text from an image file, then sends the
-recognized blocks to the mobile parser. The Home screen's current “Scan / OCR”
+recognized blocks to the Flutter parser. The Home screen's current “Scan / OCR”
 action instead accepts pasted OCR text; it does not currently invoke that
 image service. The Python benchmark in
 [`src/peit/ocr/benchmark.py`](./src/peit/ocr/benchmark.py) parses annotated
@@ -140,11 +140,11 @@ material; use them in a public demonstration only with permission and
 appropriate redaction. Synthetic images from `ReceiptCanvasGenerator` and
 synthetic consumer histories from the profiler are separate test/demo inputs.
 
-## Mobile application map
+## Flutter client map
 
 ```mermaid
 flowchart LR
-  Main["mobile/lib/main.dart<br/>wires app services and routes"]
+  Main["mobile/lib/main.dart<br/>wires Flutter services and routes"]
 
   subgraph Capture["Capture, entry, and review"]
     Home["HomeScreen"]
@@ -193,7 +193,7 @@ flowchart LR
   Push --> Daemon
 ```
 
-The mobile application is local-first: manual or reviewed entries are saved to
+The Flutter client is local-first: manual or reviewed entries are saved to
 local SQLite, the dashboard computes from local entries, and pending rows can
 be pushed to the desktop daemon. The image OCR service exists independently
 from the current Home screen's paste-text action.
@@ -231,11 +231,11 @@ absent, the host displays its fallback panel; use the native app or emulator
 as a separate demo surface unless the embedded build and message bridge have
 been verified.
 
-## LAN sync path
+## Optional Flutter-to-Python LAN sync path
 
 ```mermaid
 sequenceDiagram
-  participant Device as Mobile/device client
+  participant Device as Flutter client
   participant API as server.py
   participant Auth as auth.py / device registry
   participant Validate as core.py

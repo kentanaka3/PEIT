@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/data/schema.dart';
+import '../lib/data/schema_constants.dart';
 import '../lib/models/receipt_entry.dart';
 
 void main() {

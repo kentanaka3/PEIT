@@ -15,18 +15,18 @@ signature or a full-record tamper-proof audit guarantee.
 
 | Task | Owner | Acceptance criteria | Status |
 |---|---|---|---|
-| A1: Canonical receipt values | GPT-6 Luna / ledger | Canonical enums, numeric pack-size text, reviewed analyst labels, compatible identity hashes; existing database migration preserves rows. | In progress |
-| A2: Atomic ledger appends | GPT-6 Luna / ledger | Single and multi-item saves transact atomically; append ordering and predecessor links are checked; confirmed identities cannot be deleted through review UI. | In progress |
-| A3: Honest transaction/audit UI | GPT-6 Luna / ledger | No fabricated confidence-based approval or signature claims; synthetic history is labeled. | In progress |
-| B1: Repeatable receipt review | GPT-6 Luna / review | Two consecutive receipts work; success state is consumed; invalid or duplicate/in-flight saves are blocked. | In progress |
-| B2: Signed line accounting | GPT-6 Luna / review | Proportional allocation preserves each adjustment and payment total at cent precision; unbalanced observations cannot be silently reconciled away. | In progress |
-| B3: OCR/capture error handling | GPT-6 Luna / review | Unknown dates remain unknown; parser regressions covered; capture errors are visible and processing/resources are cleaned up. | In progress |
-| C1: Methodology alignment | GPT-6 Luna / index | Equal-weight mean of matched unit-price relatives, base 100; quantity-weighted within-item prices; separate expenditure and coverage. | In progress |
-| C2: Data safeguards and dashboard | GPT-6 Luna / index | Confirmed consumption only; mixed currencies rejected; insufficient history explicit; no fabricated official CPI or causal gap statement. | In progress |
-| D1: SDK and integration wiring | Parent | Compile against installed 37.2 without installations; minimum API remains 37; lifecycle-safe dependencies and required permissions. | In progress |
-| D2: Showcase documentation | Parent | Android is primary; Python/web and Flutter remain separate; deferred sync and audit limits stated accurately. | In progress |
-| E1: Offline validation | Parent, after A-D | Offline debug assembly, unit tests and lint pass; failures and exact counts recorded. | Pending |
-| E2: Device rehearsal | Human / prepared API 37+ device | Camera/gallery/PDF, two saves, rotation, tablet layout, errors and accessibility checked on the recording setup. | Not run |
+| A1: Canonical receipt values | GPT-6 Luna / ledger | Canonical enums, numeric pack-size text, reviewed analyst labels, compatible identity hashes; existing database migration preserves rows. | Implemented; device migration test passed |
+| A2: Atomic ledger appends | GPT-6 Luna / ledger | Single and multi-item saves transact atomically; append ordering and predecessor links are checked; confirmed identities cannot be deleted through review UI. | Implemented; device rollback test passed |
+| A3: Honest transaction/audit UI | GPT-6 Luna / ledger | No fabricated confidence-based approval or signature claims; synthetic history is labeled. | Implemented; device rehearsal pending |
+| B1: Repeatable receipt review | GPT-6 Luna / review | Two consecutive receipts work; success state is consumed; invalid or duplicate/in-flight saves are blocked. | Implemented; unit tests passed |
+| B2: Signed line accounting | GPT-6 Luna / review | Proportional allocation preserves each adjustment and payment total at cent precision; unbalanced observations cannot be silently reconciled away. | Implemented; unit tests passed |
+| B3: OCR/capture error handling | GPT-6 Luna / review | Unknown dates remain unknown; parser regressions covered; capture errors are visible and processing/resources are cleaned up. | Implemented; parser tests passed; device capture pending |
+| C1: Methodology alignment | GPT-6 Luna / index | Equal-weight mean of matched unit-price relatives, base 100; quantity-weighted within-item prices; separate expenditure and coverage. | Implemented; unit tests passed |
+| C2: Data safeguards and dashboard | GPT-6 Luna / index | Confirmed consumption only; mixed currencies rejected; insufficient history explicit; no fabricated official CPI or causal gap statement. | Implemented; unit tests passed |
+| D1: SDK and integration wiring | Parent | Compile against installed 37.2 without installations; minimum API remains 37; lifecycle-safe dependencies and required permissions. | Isolated APK identity/label and instrumentation target verified; dependency accessor fixed; current UI assertions still need a passing rerun |
+| D2: Showcase documentation | Parent | Android is primary; Python/web and Flutter remain separate; deferred sync and audit limits stated accurately. | Complete |
+| E1: Offline validation | Parent, after A-D | Offline debug assembly, isolated UI test app/test APK, unit tests and lint pass; failures and exact counts recorded. | Pre-isolation debug/unit/lint results remain historical; packaged isolated APK identity is verified, but the current UI assertion run has no passing result |
+| E2: Device rehearsal | Human / prepared API 37+ device | Camera/gallery/PDF, two saves, rotation, tablet layout, errors and accessibility checked on the recording setup. | Seven device tests and compact/wide screenshots passed on the prior revision only; current isolated UI assertions are being corrected |
 
 Implementation paths: [Android source](../app/src/main/java/init/peit/),
 [unit tests](../app/src/test/java/init/peit/),

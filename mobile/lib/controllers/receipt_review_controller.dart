@@ -2,10 +2,9 @@
 /// Powers both Card Stream (Mode 1) and Financial Data Grid (Mode 2).
 library peit_receipt_review_controller;
 
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import '../data/database.dart';
-import '../data/schema.dart';
+import '../data/schema_constants.dart';
 import '../models/receipt_entry.dart';
 import '../ocr/models.dart';
 
@@ -306,7 +305,7 @@ class ReceiptReviewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Commit approved rows into Drift SQLite database inside an atomic transaction
+  /// Commit approved rows into the SQLite database inside an atomic transaction.
   Future<int> commitToDatabase(AppDatabase db, {String account = 'default:checking'}) async {
     _isCommitting = true;
     notifyListeners();
@@ -374,4 +373,3 @@ class ReceiptReviewController extends ChangeNotifier {
     }
   }
 }
-

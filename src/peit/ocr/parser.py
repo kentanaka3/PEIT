@@ -8,8 +8,7 @@ surcharges, taxes, and footer balances from OCR text blocks or raw text lines.
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
-from typing import Sequence
+from datetime import date
 
 from peit.ocr.models import (
     BoundingBox,

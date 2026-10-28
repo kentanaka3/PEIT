@@ -11,7 +11,7 @@ import math
 import random
 from typing import Any, Sequence
 
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFont, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFont
 
 from peit.ocr.models import (
     BoundingBox,

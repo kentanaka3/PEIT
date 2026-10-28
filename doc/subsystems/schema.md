@@ -2,11 +2,11 @@
 
 This document is the authoritative technical reference for the PEIT data model, column sequences, constraints, domain enumerations, identity hashing, and accounting sign conventions.
 
-The code implementations are mastered in:
+Relevant implementations:
 - Python: [`src/peit/schema.py`](../../src/peit/schema.py)
 - Dart (Flutter): [`mobile/lib/data/schema_constants.dart`](../../mobile/lib/data/schema_constants.dart)
 - CSV Schema Definition: [`config/receipt_schema.csv`](../../config/receipt_schema.csv)
-- Drift Synchronization Tool: [`util/generate_mobile_schema.py`](../../util/generate_mobile_schema.py)
+- Dart schema generator/check tool: [`util/generate_mobile_schema.py`](../../util/generate_mobile_schema.py)
 
 ---
 
@@ -29,7 +29,7 @@ These 25 columns represent single line-item observations within an ingested or g
 | 8 | `pack_size` | `float` | `> 0` (default: 1.0) | Package size or unit multiplier |
 | 9 | `unit` | `str` | Non-empty | Physical unit of measurement (`kg`, `L`, `pcs`, etc.) |
 | 10 | `unit_price` | `float` | Numeric | Base price per unit |
-| 11 | `currency` | `str` | 3 letters (`^[A-Za-z]{3}$`) | Currency code (`MXN`, `USD`, `EUR`, `CAD`) |
+| 11 | `currency` | `str` | Three ASCII letters (`^[A-Za-z]{3}$`) in Python row validation | Currency code; the Python validator checks the shape, not membership in a supported-currency list |
 | 12 | `discount` | `float` | Signed positive (`>= 0`) | Discount amount applied to item |
 | 13 | `fee` | `float` | Signed negative (`<= 0`) | Transaction fee or surcharge |
 | 14 | `tax` | `float` | Signed negative (`<= 0`) | Value-added or sales tax |
@@ -87,7 +87,8 @@ Standardized 5-point ordinal quality hierarchy:
 
 ## 3. Cryptographic Identity Hashing (`compute_entry_id`)
 
-Entry deduplication relies on a deterministic SHA-256 hash of a 4-tuple:
+`compute_entry_id` returns a deterministic SHA-256 digest from four trimmed
+fields:
 
 $$\text{seed} = \texttt{receipt\_id} \mathbin{\Vert} \texttt{"|"}\mathbin{\Vert} \texttt{item} \mathbin{\Vert} \texttt{"|"}\mathbin{\Vert} \texttt{normalized\_amount} \mathbin{\Vert} \texttt{"|"}\mathbin{\Vert} \texttt{receipt\_date}$$
 
@@ -107,7 +108,7 @@ norm_amount = f"{num_val:.6f}"
 
 ## 4. Accounting Sign Conventions
 
-All monetary amounts follow double-entry signed cash-flow conventions:
+The normalizer helpers express these sign conventions:
 - **Expenses (`paid_total`)**: Always negative (`-abs(amount)`).
 - **Income (`paid_total`)**: Always positive (`+abs(amount)`).
 - **Discounts (`discount`)**: Always positive (`+abs(amount)`), reflecting expenditure savings.
@@ -117,17 +118,42 @@ Canonical normalizers:
 - Python: `normalize_expense_sign()`, `normalize_income_sign()`, `normalize_surcharge_sign()`, `normalize_discount_sign()`
 - Dart: `normalizeExpenseSign()`, `normalizeIncomeSign()`, `normalizeSurchargeSign()`, `normalizeDiscountSign()`
 
+`validate_rows()` checks that these monetary fields are numeric; it does not
+enforce these signs or reconcile a receipt total. Do not infer that every
+persisted client row has passed the same validation or normalization.
+
 ---
 
-## 5. Cross-Platform Parity Verification
+## 5. Implementation boundaries
 
-To guarantee that Python and Dart definitions never diverge:
-```bash
-# Check schema drift in CI
-python util/generate_mobile_schema.py --check
+Python `src/peit/schema.py` defines `RECEIPT_COLUMNS`, ledger envelope
+metadata, enums, normalizers, and `compute_entry_id`. Dart
+`mobile/lib/data/schema_constants.dart` contains corresponding definitions,
+and `mobile/lib/data/schema.dart` declares a Drift table. The Flutter runtime
+database in `mobile/lib/data/database.dart`, however, creates its SQLite table
+using direct `sqlite3` bindings. Drift declarations and dependencies therefore
+do not establish that Drift is the runtime persistence engine.
 
-# Regenerate mobile constants after changing src/peit/schema.py
-python util/generate_mobile_schema.py --write
-```
-Parity is verified by 6 automated unit tests in `test/test_schema.py`.
+The separate Android app under `demo/` uses Room entities with a different
+receipt identity boundary: `ReceiptEntity.receipt_id` is the Room primary key.
+During review save, Android generates a `receipt_id` per line and stores a
+shared receipt-group key in `notes`; that differs from canonical receipt
+groups whose line-item rows share a receipt ID. The Android UI restricts
+currency to `MXN`/`USD`/`EUR` and quality tiers to `A`–`D`, while the Python
+schema includes tier `E` and its validator only checks three-letter currency
+shape. Android stores event/availability values as strings and currently
+saves reviewed rows as `one_off`/`in_stock`.
 
+The Python ledger includes `entry_id`, `month`, `account`, and `recorded_at`
+envelope fields. Flutter adds synchronization state and carries `account` and
+`recorded_at` in its local and sync representations. The Android receipt row
+and ledger entity use separate, smaller fields (`previous_hash`, `timestamp`,
+and `is_valid` on the ledger); receipt-group provenance is in `notes`. These
+envelopes and provenance conventions are not interchangeable. The Python,
+Flutter, and Android implementations must not be described as behaviorally
+identical or as one enforced SSOT.
+
+The four-field Python/Dart digest is not the same as the Android ledger's
+separate hash-chain metadata. Receipt-level grouping, sync envelopes, account
+fields, and provenance payloads also vary by application surface. Consult the
+implementation before relying on any cross-client contract.

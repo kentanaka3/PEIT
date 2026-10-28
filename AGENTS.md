@@ -14,7 +14,7 @@ PEIT/
 ├── src/      # Python source code
 ├── test/     # Python tests
 ├── util/     # utility scripts, templates, and helpers
-└── web/      # [planned / unreleased] web application source code and static assets
+└── web/      # browser workbench source code and static assets
 ```
 
 ## Custom agents

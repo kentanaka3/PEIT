@@ -98,7 +98,7 @@ PEIT includes a high-performance, audit-grade transaction ledger (`src/peit/ledg
 - **Idempotency & Deduplication**: Every imported line-item or event receives a deterministic 4-tuple SHA-256 identity hash (`compute_entry_id(receipt_id, item, paid_total, receipt_date)`). Re-importing identical files skips existing records (`imported=0, skipped=N`), preventing duplicate accounting.
 - **Signed Cash-Flow Convention**: Outflows (expenses) are signed negative (`paid_total < 0`), inflows (income, refunds) are signed positive (`paid_total > 0`), and transfers reflect net account balance impacts.
 
-Comprehensive architecture, schema specifications, and financial rules are documented in [`doc/ledger.md`](doc/ledger.md).
+Comprehensive architecture, schema specifications, and financial rules are documented in [`doc/subsystems/ledger.md`](doc/subsystems/ledger.md).
 
 ## Command-Line Interface (CLI)
 
@@ -261,6 +261,8 @@ bash test/run_tests.sh -k "island"
 Comprehensive technical guides, specifications, and architecture decision records are maintained under [`doc/`](doc/):
 
 - [`doc/README.md`](doc/README.md): **Documentation Map & Index**
+- [`MAP.md`](MAP.md): current source-code and interface navigation map.
+- [`demo/README.md`](demo/README.md): native Android showcase guide, current validation evidence, and separate Python/web and Flutter walkthroughs.
 - **Architecture**:
   - [`doc/architecture/ssot_resilience.md`](doc/architecture/ssot_resilience.md): SSOT, drift prevention & self-healing dual persistence.
   - [`doc/architecture/mobile_hybrid.md`](doc/architecture/mobile_hybrid.md): Hybrid Card Stream & Data Grid mobile architecture.

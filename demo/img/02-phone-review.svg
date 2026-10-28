@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="1260" viewBox="0 0 1160 1260" role="img" aria-labelledby="title desc">
+  <title id="title">PEIT — human review before a receipt enters the ledger</title>
+  <desc id="desc">Original 360 dp phone design with vertically stacked receipt evidence, observed fields, an uncertain OCR date, a separate analyst-label control, a balanced payment and a disabled save action until review is complete. All receipt contents are invented.</desc>
+  <defs>
+    <filter id="shadow" x="-25%" y="-10%" width="150%" height="130%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#102F36" flood-opacity=".14"/></filter>
+    <style>
+      svg{fill:#112B35}text{font-family:Arial,Helvetica,sans-serif}.muted{fill:#526B70}.small{font-size:12px}.body{font-size:14px}.label{font-size:13px;font-weight:700}.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px}.teal{fill:#087F75}
+      [fill="#102F36"]{fill:#112B35}[stroke="#102F36"]{stroke:#112B35}
+      [fill="#176B5B"]{fill:#087F75}[stroke="#176B5B"]{stroke:#087F75}
+      [fill="#F3F5F0"],[fill="#F4F6F2"]{fill:#F4F7F6}
+      [fill="#E8B779"],[fill="#BC8448"]{fill:#D99746}
+    </style>
+  </defs>
+  <rect width="1160" height="1260" fill="#F3F5F0"/>
+  <text x="64" y="66" class="eyebrow">PEIT / EVIDENCE BEFORE INTERPRETATION</text>
+  <text x="64" y="121" font-size="38" font-weight="700">A little attention. A reliable record.</text>
+  <text x="64" y="153" font-size="16" class="muted">02 / Phone review · 360 dp content width · expanded scroll-content study</text>
+  <g transform="translate(100 205)" filter="url(#shadow)">
+    <rect x="-10" y="-10" width="380" height="980" rx="42" fill="#102F36"/>
+    <rect width="360" height="960" rx="34" fill="#F4F6F2"/>
+    <text x="24" y="29" class="label">9:41</text>
+    <rect x="307" y="17" width="26" height="11" rx="3" fill="#102F36"/>
+    <path d="M32 60L23 69L32 78" stroke="#102F36" stroke-width="2" fill="none"/>
+    <text x="53" y="76" font-size="21" font-weight="700">Review receipt</text>
+    <text x="20" y="111" class="body muted">Draft · local to this device · synthetic</text>
+    <rect x="20" y="130" width="320" height="115" rx="18" fill="#E5EBE4"/>
+    <path d="M38 147h98v80l-7-3-7 3-7-3-7 3-7-3-7 3-7-3-7 3-7-3-7 3-7-3-7 3-7-3-7 3z" fill="#FFFDF8"/>
+    <text x="87" y="166" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700">MAPLE MARKET</text>
+    <text x="49" y="181" font-family="monospace" font-size="9">22/10/2026</text>
+    <path d="M49 190h75m-75 8h50m-50 8h75" stroke="#8D9B93" stroke-width="1"/>
+    <text x="49" y="219" font-family="monospace" font-size="9">TOTAL EUR 12.40</text>
+    <text x="155" y="160" class="label">Source image</text>
+    <text x="155" y="181" class="small muted">Keep the original in sight.</text>
+    <rect x="155" y="187" width="165" height="48" rx="12" fill="#FFFFFF"/>
+    <text x="237" y="216" text-anchor="middle" class="label teal">Open receipt ↗</text>
+    <rect x="20" y="259" width="320" height="57" rx="14" fill="#F3E7D7"/>
+    <circle cx="42" cy="282" r="9" fill="none" stroke="#80572D" stroke-width="1.5"/><text x="42" y="287" text-anchor="middle" class="label">!</text>
+    <text x="60" y="281" class="label" fill="#80572D">Check the date before saving</text>
+    <text x="60" y="301" class="small" fill="#80572D">OCR suggestion, not a confirmed observation.</text>
+    <text x="20" y="347" class="eyebrow muted">OBSERVED FIELDS</text>
+    <rect x="20" y="361" width="320" height="63" rx="12" fill="#FFFFFF" stroke="#CFDCD5"/>
+    <text x="36" y="381" class="small muted">Merchant</text>
+    <text x="36" y="408" font-size="17">Maple Market</text>
+    <rect x="20" y="434" width="320" height="69" rx="12" fill="#FFFDF8" stroke="#A67740" stroke-width="1.5"/>
+    <text x="36" y="455" class="small" fill="#80572D">Date · uncertain OCR</text>
+    <text x="36" y="483" font-size="17">22 / 10 / 2026</text>
+    <path d="M299 475l10-10 4 4-10 10-6 2z" fill="none" stroke="#80572D" stroke-width="1.5"/>
+    <rect x="20" y="513" width="320" height="61" rx="12" fill="#FFFFFF" stroke="#CFDCD5"/>
+    <text x="36" y="534" class="small muted">Currency</text>
+    <text x="36" y="558" font-size="17">EUR — Euro</text>
+    <text x="20" y="607" font-size="18" font-weight="700">Items</text>
+    <text x="340" y="607" text-anchor="end" class="small muted">1 of 3 shown</text>
+    <rect x="20" y="621" width="320" height="88" rx="16" fill="#FFFFFF" stroke="#CFDCD5"/>
+    <text x="36" y="646" class="label">Rolled oats · 500 g</text>
+    <text x="36" y="670" class="body muted">2 packs × €1.60</text>
+    <text x="320" y="646" text-anchor="end" class="label">−€3.20</text>
+    <text x="36" y="694" class="small teal">Pack size and quantity confirmed</text>
+    <rect x="20" y="723" width="320" height="63" rx="12" fill="#EDF1EC" stroke="#CFDCD5"/>
+    <text x="36" y="744" class="small muted">Analyst label · not read from receipt</text>
+    <text x="36" y="771" font-size="16">Recurring consumption</text>
+    <path d="M305 760l6 6 6-6" fill="none" stroke="#526B70" stroke-width="1.5"/>
+    <path d="M20 806H340" stroke="#CFDCD5"/>
+    <text x="20" y="834" class="body">Reviewed payment</text>
+    <text x="340" y="834" text-anchor="end" font-size="20" font-weight="700">−€12.40</text>
+    <text x="20" y="856" class="small teal">✓ Items + adjustments balance · difference €0.00</text>
+    <rect x="20" y="877" width="320" height="48" rx="16" fill="#DCE4DE"/>
+    <text x="180" y="907" text-anchor="middle" class="label muted">Confirm date to save</text>
+    <rect x="125" y="944" width="110" height="4" rx="2" fill="#102F36"/>
+  </g>
+  <g transform="translate(558 240)">
+    <text class="eyebrow teal">HUMAN REVIEW IS THE CHECKPOINT</text>
+    <text y="51" font-size="31" font-weight="700">A suggestion is not</text>
+    <text y="92" font-size="31" font-weight="700">an observation.</text>
+    <text y="133" font-size="16" class="muted">Uncertainty stays visible until a person resolves it.</text>
+    <rect y="182" width="516" height="210" rx="20" fill="#FFFFFF" stroke="#D8E2DC"/>
+    <text x="24" y="215" class="eyebrow muted">CLEARLY SEPARATED LAYERS</text>
+    <circle cx="32" cy="248" r="5" fill="#176B5B"/>
+    <text x="49" y="254" font-size="16" font-weight="700">Source evidence</text>
+    <text x="49" y="277" class="body muted">Original receipt; visible, locally held.</text>
+    <circle cx="32" cy="307" r="5" fill="#BC8448"/>
+    <text x="49" y="313" font-size="16" font-weight="700">OCR suggestion</text>
+    <text x="49" y="336" class="body muted">Editable; uncertainty named in words, not just color.</text>
+    <text x="24" y="370" class="small muted">Analyst labels are a separate judgment, never receipt facts.</text>
+    <text y="448" font-size="19" font-weight="700">One decision at a time</text>
+    <text y="478" font-size="15" class="muted">Stacked fields keep a readable label above each value.</text>
+    <text y="504" font-size="15" class="muted">A receipt preview opens full-screen, never a narrow pane.</text>
+    <text y="554" font-size="19" font-weight="700">Balanced does not mean verified</text>
+    <text y="584" font-size="15" class="muted">A zero payment difference cannot validate an OCR date.</text>
+    <text y="610" font-size="15" class="muted">Saving remains gated by unresolved required fields.</text>
+    <rect y="659" width="516" height="146" rx="20" fill="#102F36"/>
+    <text x="24" y="693" font-size="18" font-weight="700" fill="#F4F7F2">Designed for an actual phone</text>
+    <text x="24" y="723" font-size="15" fill="#D5E4DC">Scrollable form · 48 dp minimum interactive rows</text>
+    <text x="24" y="749" font-size="15" fill="#D5E4DC">Keyboard-aware footer · no horizontal field scrolling</text>
+    <text x="24" y="778" class="small" fill="#D5E4DC">Expanded content shown here; not a fixed device-height spec.</text>
+    <text y="865" class="small muted">Fictional receipt for design only; no personal data used.</text>
+  </g>
+  <text x="64" y="1225" class="small muted">PEIT DESIGN STUDY / OBSERVE CAREFULLY → REVIEW EXPLICITLY → SAVE DELIBERATELY</text>
+</svg>

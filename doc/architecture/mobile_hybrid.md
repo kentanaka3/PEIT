@@ -158,4 +158,3 @@ To ensure maximum econometric reliability before assembling Flutter screens, Pha
 - Implemented **Mode 2: Financial Data Grid** (`mobile/lib/screens/receipt_data_grid_screen.dart`) with high-density tabular layout and split inspector sheet.
 - Added live mode switching (`Icons.view_agenda` $\leftrightarrow$ `Icons.table_chart`) and camera/scan trigger in `mobile/lib/screens/home_screen.dart`.
 - Validated via automated unit and integration tests in `mobile/test/model_test.dart`, `mobile/test/ocr_parser_test.dart`, and `mobile/test/review_controller_test.dart`.
-

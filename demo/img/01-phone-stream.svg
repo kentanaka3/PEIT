@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="1100" viewBox="0 0 1160 1100" role="img" aria-labelledby="title desc">
+  <title id="title">PEIT — a quiet, local-first receipt stream</title>
+  <desc id="desc">Original visual proposal, not an application screenshot. A 360 logical-pixel phone shows stacked expenditure, matched-item price signal, and receipt cards. All figures and merchants are fictional. Design notes explain local storage and the distinction between spending and prices.</desc>
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#D8E2DC"/></pattern>
+    <filter id="shadow" x="-25%" y="-15%" width="150%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#102F36" flood-opacity=".14"/></filter>
+    <style>
+      svg{fill:#112B35}text{font-family:Arial,Helvetica,sans-serif}
+      [fill="#102F36"]{fill:#112B35}[stroke="#102F36"]{stroke:#112B35}
+      [fill="#176B5B"]{fill:#087F75}[stroke="#176B5B"]{stroke:#087F75}
+      [fill="#F3F5F0"],[fill="#F4F6F2"]{fill:#F4F7F6}
+      [fill="#E8B779"],[fill="#BC8448"]{fill:#D99746}
+      .muted{fill:#526B70}.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px}
+      .body{font-size:14px}.small{font-size:12px}.label{font-size:13px;font-weight:700}
+      .white{fill:#F4F7F2}.teal{fill:#087F75}
+    </style>
+  </defs>
+  <rect width="1160" height="1100" fill="#F3F5F0"/>
+  <rect x="0" y="0" width="1160" height="1100" fill="url(#dots)" opacity=".5"/>
+  <text x="64" y="66" class="eyebrow">PEIT / PERSONAL EXPENDITURE INSIGHT</text>
+  <text x="64" y="121" font-size="38" font-weight="700">Your receipts. A clearer picture.</text>
+  <text x="64" y="153" font-size="16" class="muted">01 / Phone stream · 360 dp content width · original visual proposal</text>
+  <g transform="translate(100 204)" filter="url(#shadow)">
+    <rect x="-10" y="-10" width="380" height="850" rx="42" fill="#102F36"/>
+    <rect width="360" height="830" rx="34" fill="#F4F6F2"/>
+    <text x="24" y="29" class="label">9:41</text>
+    <path d="M285 25v-4m5 4v-7m5 7V15" fill="none" stroke="#102F36" stroke-width="3"/>
+    <rect x="311" y="16" width="22" height="11" rx="3" fill="none" stroke="#102F36" stroke-width="1.5"/><rect x="314" y="19" width="15" height="5" rx="1" fill="#102F36"/>
+    <text x="20" y="77" font-size="26" font-weight="700">PEIT</text>
+    <rect x="223" y="51" width="117" height="32" rx="16" fill="#E4EEE8"/>
+    <path d="M238 65v-3a4 4 0 0 1 8 0v3m-9 0h10v8h-10z" fill="none" stroke="#176B5B" stroke-width="1.5"/>
+    <text x="255" y="72" class="small teal">On this device</text>
+    <text x="20" y="111" class="body muted">October 2026</text>
+    <rect x="231" y="94" width="109" height="26" rx="13" fill="#F3E7D7"/>
+    <text x="285" y="111" text-anchor="middle" class="small" fill="#775327">Synthetic demo</text>
+    <rect x="20" y="137" width="320" height="143" rx="20" fill="#102F36"/>
+    <text x="40" y="166" class="body white">Expenditure this month</text>
+    <text x="40" y="208" font-size="36" font-weight="700" class="white">€248.60</text>
+    <rect x="40" y="229" width="61" height="28" rx="14" fill="#29464B"/>
+    <text x="70" y="248" text-anchor="middle" class="small white">+8.4%</text>
+    <text x="112" y="247" class="small white">vs September · prices + quantities</text>
+    <rect x="20" y="294" width="320" height="191" rx="20" fill="#FFFFFF" stroke="#DAE3DE"/>
+    <text x="40" y="324" class="label">Matched-item price signal</text>
+    <text x="40" y="365" font-size="32" font-weight="700">102.1</text>
+    <text x="151" y="363" class="body muted">September = 100</text>
+    <path d="M40 396H320" stroke="#DFE8E2"/>
+    <path d="M40 392L87 385L133 389L180 379L226 383L272 374L316 377" fill="none" stroke="#176B5B" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="316" cy="377" r="4" fill="#BC8448"/>
+    <text x="40" y="422" class="small muted">12 of 18 base items matched · 67% coverage</text>
+    <text x="40" y="447" class="small muted">100 × mean(current / base item unit price)</text>
+    <text x="40" y="468" class="small teal">Derived indicator, not official CPI</text>
+    <text x="20" y="521" font-size="18" font-weight="700">Receipt stream</text>
+    <text x="340" y="521" text-anchor="end" class="small muted">2 recent</text>
+    <rect x="20" y="538" width="320" height="88" rx="18" fill="#FFFFFF" stroke="#DAE3DE"/>
+    <rect x="36" y="555" width="44" height="44" rx="13" fill="#E8F0E9"/>
+    <path d="M48 567h19v23l-3-2-3 2-3-2-3 2-3-2-4 2z m4 6h11m-11 6h8" fill="none" stroke="#176B5B" stroke-width="1.6" stroke-linejoin="round"/>
+    <text x="94" y="564" class="label">Maple Market</text>
+    <text x="94" y="585" class="small muted">Today · 3 items</text>
+    <text x="320" y="564" text-anchor="end" class="label">−€12.40</text>
+    <text x="94" y="608" class="small teal">✓ Reviewed</text>
+    <rect x="20" y="638" width="320" height="88" rx="18" fill="#FFFFFF" stroke="#DAE3DE"/>
+    <rect x="36" y="655" width="44" height="44" rx="13" fill="#F3E7D7"/>
+    <path d="M48 667h19v23l-3-2-3 2-3-2-3 2-3-2-4 2z m4 6h11m-11 6h8" fill="none" stroke="#80572D" stroke-width="1.6" stroke-linejoin="round"/>
+    <text x="94" y="664" class="label">Corner Pantry</text>
+    <text x="94" y="685" class="small muted">Yesterday · draft</text>
+    <text x="94" y="708" class="small" fill="#80572D">Review 1 uncertain field</text>
+    <rect x="0" y="742" width="360" height="61" fill="#FFFFFF"/>
+    <path d="M0 742H360" stroke="#DAE3DE"/>
+    <rect x="18" y="751" width="78" height="44" rx="16" fill="#E4EEE8"/>
+    <text x="57" y="778" text-anchor="middle" class="label teal">Stream</text>
+    <text x="151" y="778" text-anchor="middle" class="label muted">Insights</text>
+    <rect x="215" y="750" width="125" height="48" rx="16" fill="#176B5B"/>
+    <text x="277" y="779" text-anchor="middle" class="label white">+ Add receipt</text>
+    <rect x="125" y="815" width="110" height="4" rx="2" fill="#102F36"/>
+  </g>
+  <g transform="translate(558 243)">
+    <text y="0" class="eyebrow teal">A LEDGER THAT LEAVES ROOM TO THINK</text>
+    <text y="51" font-size="31" font-weight="700">Observe first.</text>
+    <text y="92" font-size="31" font-weight="700">Understand over time.</text>
+    <text y="133" font-size="16" class="muted">A calm stack of cards, not a compressed spreadsheet.</text>
+    <path d="M0 170H520" stroke="#CFDCD5"/>
+    <circle cx="17" cy="213" r="17" fill="#E1ECE5"/><text x="17" y="218" text-anchor="middle" class="label teal">1</text>
+    <text x="49" y="209" font-size="18" font-weight="700">Spending is not a price index</text>
+    <text x="49" y="235" font-size="15" class="muted">Separate cards, explicit baselines and coverage.</text>
+    <circle cx="17" cy="292" r="17" fill="#E1ECE5"/><text x="17" y="297" text-anchor="middle" class="label teal">2</text>
+    <text x="49" y="288" font-size="18" font-weight="700">Evidence stays in view</text>
+    <text x="49" y="314" font-size="15" class="muted">Drafts remain visibly distinct from reviewed receipts.</text>
+    <circle cx="17" cy="371" r="17" fill="#E1ECE5"/><text x="17" y="376" text-anchor="middle" class="label teal">3</text>
+    <text x="49" y="367" font-size="18" font-weight="700">Private by default</text>
+    <text x="49" y="393" font-size="15" class="muted">Device-local context; no implied account or cloud sync.</text>
+    <rect y="451" width="516" height="151" rx="20" fill="#E5EDE6"/>
+    <text x="24" y="482" class="eyebrow teal">SMALL SCREEN CONTRACT</text>
+    <text x="24" y="513" font-size="15">20 dp gutters · one column · 48 dp primary actions</text>
+    <text x="24" y="540" font-size="15">Cards scroll; navigation stays reachable.</text>
+    <text x="24" y="572" class="small muted">At larger text sizes, cards grow instead of clipping content.</text>
+    <text y="669" class="eyebrow">OBSERVATION → REVIEW → DERIVATION</text>
+    <text y="698" font-size="15" class="muted">Illustrative values only. Not a scientific result.</text>
+    <text y="723" font-size="15" class="muted">The small trend is a visual placeholder, not measured history.</text>
+  </g>
+  <text x="64" y="1070" class="small muted">PEIT DESIGN STUDY / LOCAL OBSERVATIONS, HUMAN JUDGMENT, TRANSPARENT METHODS</text>
+</svg>

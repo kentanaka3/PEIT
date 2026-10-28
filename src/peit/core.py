@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import re
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Iterable
@@ -154,8 +154,11 @@ def calculate_indices(
 ) -> list[dict[str, object]]:
   """Calculate transparent monthly price and expenditure indices.
 
-  The first available month is 100.0. Price observations use exact normalized
-  items first, then category averages when no item match exists.
+  The first available month is 100.0. Price relatives use exact item-key
+  matches and quantity-weighted monthly averages of ``unit_price``. The price
+  index is the unweighted mean of matched item relatives; unmatched items are
+  excluded and reported through base-item coverage. Expenditure uses absolute
+  ``paid_total`` values for recurring and one-off rows.
   """
   grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
   for row in rows:

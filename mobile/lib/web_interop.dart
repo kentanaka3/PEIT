@@ -6,7 +6,6 @@
 /// fallback safe event dispatching for cross-platform compilation.
 library peit_web_interop;
 
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 

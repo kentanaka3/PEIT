@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/database.dart';
-import '../models/receipt_entry.dart';
 import '../services/econometric_engine.dart';
 
 /// Comprehensive, responsive Material 3 Dashboard screen for PEIT Mobile.

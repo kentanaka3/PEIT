@@ -1,16 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../models/receipt_entry.dart';
-import 'schema.dart';
 
 /// AppDatabase providing robust, fast SQLite persistence for PEIT Mobile.
 ///
-/// Implemented using direct SQLite bindings (compatible with drift/sqlite3 packages)
-/// ensuring full functionality both with and without pre-compiled code generation.
+/// Implemented using direct SQLite bindings without code generation.
 class AppDatabase {
   final Database _db;
 

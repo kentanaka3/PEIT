@@ -1,4 +1,32 @@
-# PLAN_PROFILER: Profile × Market Receipt Generator
+# Synthetic Consumer Profiler: Implemented Surface and Design Notes
+
+> **Implementation status:** The Python package exists under `src/peit/profiler/`. The proposal and roadmap material below is historical design context; it is not a reliable inventory of delivered features.
+
+`Profile`, `Market`, and `generate()` are implemented in `profile.py`,
+`market.py`, and `generator.py`. The generator emits 25-column receipt rows
+and a ground-truth manifest. It supports seeded generation, recurring
+consumption rows, income rows, scenario rows, savings transfers, and possible
+refund rows. In generated consumption rows, gross spend is
+`quantity * pack_size * unit_price`; the generated discount is subtracted to
+form the negative `paid_total`.
+
+The CLI in `src/peit/profiler/cli.py` provides `generate` and
+`generate-image` subcommands. `generate` accepts `--profile`, `--market`,
+optional `--seed`, `--output`, `--manifest`, and `--import-ledger`; CSV goes
+to stdout when `--output` is omitted. `generate-image` requires `--output`
+and accepts `--manifest`, `--seed`, and `--distort/--no-distort`. These
+interfaces are not the `peit --index` or ledger dashboard CLI.
+
+The generated `paid_total` is not interchangeable with the Android review
+allocator's `linePrice`-based allocation. Compare only after specifying what
+quantity and pack-size units mean for the observation.
+
+## Historical proposal
+
+The following original material is retained as design notes. Treat its
+`Proposed Changes`, roadmap, statistical-verification, and manual-verification
+sections as plans or claims requiring source verification—not as current
+runtime behavior.
 
 ## Problem
 
@@ -277,7 +305,7 @@ def generate(
     """
     rng = random.Random(seed)
     rows = []
-    
+
     # Track persistent market shelf prices per (item, merchant) and hazard elapsed time state
     shelf_prices: dict[tuple[str, str], float] = {}  # (item, merchant) → current shelf price
     last_purchased_month: dict[str, int] = {item.item: -999 for item in profile.basket}

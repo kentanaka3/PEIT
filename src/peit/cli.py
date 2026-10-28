@@ -6,13 +6,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from peit.auth import DeviceRegistry, PairingManager, generate_self_signed_cert, get_cert_fingerprint
+from peit.auth import DeviceRegistry, generate_self_signed_cert, get_cert_fingerprint
 from peit.core import MONTH_RE, calculate_indices, read_csv
 from peit.dashboard import create_dashboard, create_index_report
 from peit.ledger import (
